@@ -12,7 +12,7 @@ const {doopContracts} = require('./constants');
 app.use(cors())
 app.use(bodyParser.json());
 
-app.get('/getDoops', async (req, res)=>{
+app.get('/doops', async (req, res)=>{
   if(typeof req.query.address === 'undefined') {
     res.json({error:'No address found'});
     return;
@@ -82,6 +82,21 @@ app.get('/getDoops', async (req, res)=>{
     }
   });
   res.json(results);
+});
+
+app.get('/assets/:tokenId', async (req, res)=>{
+  if(typeof req.params.tokenId === 'undefined') {
+    res.json({error:'No tokenId found'});
+    return;
+  }
+  const wearablesResponse = await axios.get(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
+
+  const doodleResponse = await axios.get(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
+
+  res.json({
+    ...doodleResponse.data,
+    ...wearablesResponse.data
+  });
 });
 
 app.listen(PORT, () => {
