@@ -1,5 +1,6 @@
 const dotenv = require('dotenv').config();
 const express = require('express');
+const cors = require('cors')
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const {body, query, validationResult} = require('express-validator');
@@ -8,7 +9,9 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const {doopContracts} = require('./constants');
 
+app.use(cors())
 app.use(bodyParser.json());
+
 app.get('/getDoops', async (req, res)=>{
   if(typeof req.query.address === 'undefined') {
     res.json({error:'No address found'});
