@@ -53,12 +53,11 @@ app.get('/doops', async (req, res)=>{
     page ++;
   }
   const results = allResults.filter((transaction)=>{
-    return Object.keys(doopContracts).indexOf(transaction.to) > -1;
+    return Object.keys(doopContracts).indexOf(transaction.to) > -1 && transaction.functionName.substring(0,10) === 'dooplicate';
   }).map((transaction)=>{
     abiDecoder.addABI(doopContracts[transaction.to]);
     const decodedData = abiDecoder.decodeMethod(transaction.input)
-
-    const info = [...decodedData.params].reduce((acc, param)=>{
+    info = [...decodedData.params].reduce((acc, param)=>{
       const names = ['tokenId', 'dooplicatorId', 'addressOnTheOtherSide'];
       if (names.indexOf(param.name) > -1) {
         acc = {
@@ -77,7 +76,7 @@ app.get('/doops', async (req, res)=>{
       gas: transaction.gas,
       gasPrice: transaction.gasPrice,
       cumulativeGasUsed: transaction.cumulativeGasUsed,
-      functionName: decodedData.name,
+      functionName: decodedData?.name,
       ...info
     }
   });
