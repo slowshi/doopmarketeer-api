@@ -9,6 +9,14 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const {doopContracts} = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
+const { ethers, JsonRpcProvider } = require('ethers');
+
+
+async function resolveENS(name) {
+  const provider = new JsonRpcProvider('https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161');
+  const address = await provider.resolveName(name);
+  return address;
+}
 
 const cacheAxiosGet = async (url, extra = {})=> {
   if (cacheServiceInstance.has(url) && !cacheServiceInstance.isExpired(url, 300)) {
@@ -27,13 +35,18 @@ app.get('/doops', async (req, res)=>{
     res.json({error:'No address found'});
     return;
   }
+  let address = req.query.address;
+  if(address.includes('.eth')) {
+    address = await resolveENS(address);
+  }
+
   let allResults = [];
   let page = 2;
   const response = await axios.get('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'txlist',
-      address: req.query.address,
+      address: address,
       startblock: 16508485,
       endblock: 99999999,
       page: 1,
@@ -49,7 +62,7 @@ app.get('/doops', async (req, res)=>{
       params: {
         module: 'account',
         action: 'txlist',
-        address: req.query.address,
+        address: address,
         startblock: 16508485,
         endblock: 99999999,
         page: page,
