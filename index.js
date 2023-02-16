@@ -8,6 +8,16 @@ const abiDecoder = require('abi-decoder');
 const app = express();
 const PORT = process.env.PORT || 8000;
 const {doopContracts} = require('./constants');
+const { cacheServiceInstance } = require("./cacheService");
+
+const cacheAxiosGet = async (url, extra = {})=> {
+  if (cacheServiceInstance.has(url) && !cacheServiceInstance.isExpired(url, 300)) {
+    return cacheServiceInstance.get(url);
+  }
+  const response = await axios.get(url, extra);
+  cacheServiceInstance.set(url, response);
+  return response;
+};
 
 app.use(cors())
 app.use(bodyParser.json());
@@ -88,9 +98,9 @@ app.get('/assets/:tokenId', async (req, res)=>{
     res.json({error:'No tokenId found'});
     return;
   }
-  const wearablesResponse = await axios.get(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
+  const wearablesResponse = await cacheAxiosGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
 
-  const doodleResponse = await axios.get(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
+  const doodleResponse = await cacheAxiosGet(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
 
   res.json({
     ...doodleResponse.data,
