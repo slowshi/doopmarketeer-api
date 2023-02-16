@@ -29,7 +29,9 @@ const cacheAxiosGet = async (url, extra = {})=> {
 
 app.use(cors())
 app.use(bodyParser.json());
-
+app.get('/', (req, res)=>{
+  res.json({})
+})
 app.get('/doops', async (req, res)=>{
   if(typeof req.query.address === 'undefined') {
     res.json({error:'No address found'});
