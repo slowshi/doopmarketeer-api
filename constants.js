@@ -84,12 +84,15 @@ const dooplicate = [
     "type": "function"
   }
 ];
-
+const DOOPMARKET_ADDRESS = '0xcdef9b7949869cbeddcaeb398445e5972d8f564c';
+const DOOPLICATOR_ADDRESS = '0x36c3ec16da484240f74d05c0213186a3248e0e48';
 const doopContracts = {
-  '0xcdef9b7949869cbeddcaeb398445e5972d8f564c': dooplicateItem,
-  '0x36c3ec16da484240f74d05c0213186a3248e0e48': dooplicate
+  [DOOPMARKET_ADDRESS]: dooplicateItem,
+  [DOOPLICATOR_ADDRESS]: dooplicate
 };
 
 module.exports = {
+  DOOPMARKET_ADDRESS,
+  DOOPLICATOR_ADDRESS,
   doopContracts
 };

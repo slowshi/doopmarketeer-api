@@ -9,7 +9,7 @@ const {body, query, validationResult} = require('express-validator');
 const abiDecoder = require('abi-decoder');
 const app = express();
 const PORT = process.env.PORT || 8000;
-const {doopContracts} = require('./constants');
+const {doopContracts, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS} = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
 const { ethers, JsonRpcProvider } = require('ethers');
 
@@ -21,11 +21,12 @@ async function resolveENS(name) {
 }
 
 const cacheAxiosGet = async (url, extra = {})=> {
-  if (cacheServiceInstance.has(url) && !cacheServiceInstance.isExpired(url, 300)) {
-    return cacheServiceInstance.get(url);
+  const key = `${url}_${JSON.stringify(extra)}`
+  if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300)) {
+    return cacheServiceInstance.get(key);
   }
   const response = await axios.get(url, extra);
-  cacheServiceInstance.set(url, response);
+  cacheServiceInstance.set(key, response);
   return response;
 };
 
@@ -34,6 +35,7 @@ app.use(bodyParser.json());
 app.get('/', (req, res)=>{
   res.json({})
 })
+
 app.get('/doops', async (req, res)=>{
   if(typeof req.query.address === 'undefined') {
     res.json({error:'No address found'});
@@ -46,7 +48,7 @@ app.get('/doops', async (req, res)=>{
 
   let allResults = [];
   let page = 2;
-  const response = await axios.get('https://api.etherscan.io/api', {
+  const response =  await cacheAxiosGet('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'txlist',
@@ -54,7 +56,7 @@ app.get('/doops', async (req, res)=>{
       startblock: 16508485,
       endblock: 99999999,
       page: 1,
-      offset: 100,
+      offset: 1000,
       sort: 'desc',
       apikey: process.env.ETHERSCAN_API_KEY
     }
@@ -62,7 +64,7 @@ app.get('/doops', async (req, res)=>{
   let newResults = response.data.result;
   allResults = [...allResults, ...newResults];
   while(newResults.length > 0) {
-    const res = await axios.get('https://api.etherscan.io/api', {
+    const res =  await cacheAxiosGet('https://api.etherscan.io/api', {
       params: {
         module: 'account',
         action: 'txlist',
@@ -70,7 +72,7 @@ app.get('/doops', async (req, res)=>{
         startblock: 16508485,
         endblock: 99999999,
         page: page,
-        offset: 100,
+        offset: 1000,
         sort: 'desc',
         apikey: process.env.ETHERSCAN_API_KEY
       }
@@ -80,7 +82,7 @@ app.get('/doops', async (req, res)=>{
     page ++;
   }
   const results = allResults.filter((transaction)=>{
-    return Object.keys(doopContracts).indexOf(transaction.to) > -1 && transaction.functionName.substring(0,10) === 'dooplicate';
+    return [DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 && transaction.functionName.substring(0,10) === 'dooplicate';
   }).map((transaction)=>{
     abiDecoder.addABI(doopContracts[transaction.to]);
     const decodedData = abiDecoder.decodeMethod(transaction.input)
@@ -125,6 +127,84 @@ app.get('/assets/:tokenId', async (req, res)=>{
   });
 });
 
+app.get('/leaderboard', async (req, res)=>{
+  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS);
+  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS);
+  let leaderboard = [...doopMarket, ...dooplicators].reduce((acc, item)=>{
+    let user = {
+      timeStamp: 0,
+      address: '',
+      dooplicate: 0,
+      dooplicateItem: 0,
+      value: 0
+    };
+    if (typeof acc[item.from] === 'undefined') {
+      user = {
+        timeStamp: Number(item.timeStamp),
+        address: item.from,
+        dooplicate: item.functionName === 'dooplicate' ? 1 : 0,
+        dooplicateItem: item.functionName === 'dooplicateItem' ? 1 : 0,
+        value: Number(item.value)
+      }
+    } else {
+      const existingUser = acc[item.from];
+      user = {
+        ...existingUser,
+        timeStamp: existingUser.timeStamp >= item.timeStamp ? existingUser.timeStamp : item.timeStamp,
+        value: Number(existingUser.value) + Number(item.value),
+        dooplicate: item.functionName === 'dooplicate' ? existingUser.dooplicate + 1 : existingUser.dooplicate,
+        dooplicateItem: item.functionName === 'dooplicateItem' ? existingUser.dooplicateItem + 1 : existingUser.dooplicateItem,
+      }
+    }
+    acc = {
+      ...acc,
+      [item.from]: user
+    }
+    return acc;
+  }, {})
+  res.json(Object.values(leaderboard))
+})
+
+const getDooplicatorTransactions = async (address) => {
+  const response = await cacheAxiosGet('https://api.etherscan.io/api', {
+    params: {
+      module: 'account',
+      action: 'txlist',
+      address: address,
+      startblock: 16508485,
+      endblock: 99999999,
+      page: 1,
+      offset: 10000,
+      sort: 'desc',
+      apikey: process.env.ETHERSCAN_API_KEY
+    }
+  });
+  const results = response.data.result.filter((transaction)=>{
+    return transaction.functionName.substring(0,10) === 'dooplicate';
+  }).map((transaction)=>{
+    abiDecoder.addABI(doopContracts[transaction.to]);
+    const decodedData = abiDecoder.decodeMethod(transaction.input)
+    info = [...decodedData.params].reduce((acc, param)=>{
+      const names = ['tokenId', 'dooplicatorId', 'addressOnTheOtherSide'];
+      if (names.indexOf(param.name) > -1) {
+        acc = {
+          ...acc,
+          [param.name]: param.value
+        }
+      }
+      return acc;
+    },{});
+
+    return {
+      timeStamp: transaction.timeStamp,
+      from: transaction.from,
+      value: transaction.value,
+      functionName: decodedData?.name,
+      // ...info
+    }
+  });
+  return results;
+}
 app.listen(PORT, () => {
   console.log(`Started on PORT ${PORT}`);
 });
