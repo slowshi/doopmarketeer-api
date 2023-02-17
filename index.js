@@ -127,10 +127,9 @@ app.get('/assets/:tokenId', async (req, res)=>{
   const wearablesResponse = await cacheGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
 
   const doodleResponse = await cacheGet(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
-
   res.json({
-    ...doodleResponse.data,
-    ...wearablesResponse.data
+    ...doodleResponse,
+    ...wearablesResponse
   });
 });
 
