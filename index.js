@@ -165,7 +165,36 @@ app.get('/leaderboard', async (req, res)=>{
   res.json(Object.values(leaderboard))
 })
 
-const getDooplicatorTransactions = async (address) => {
+app.get('/history', async (req, res)=>{
+  let {offset,page} = req.query;
+
+  if(typeof page === 'undefined' || page < 1) {
+    page = 1
+  } else {
+    page = Number(page)
+  }
+
+  if(typeof offset === 'undefined') {
+    offset = 20
+  } else {
+    offset = Number(offset)
+  }
+  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS);
+  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS);
+  const results = [...doopMarket, ...dooplicators].sort((a,b)=>{
+    if (a['timeStamp'] > b['timeStamp']) {
+      return -1;
+    }
+    if (a['timeStamp'] < b['timeStamp']) {
+      return 1;
+    }
+    return 0;
+  }).slice((page - 1) * offset, offset * page);
+
+  res.json(results)
+})
+
+const getDooplicatorTransactions = async (address, page = 1, offset = 10000) => {
   const response = await cacheAxiosGet('https://api.etherscan.io/api', {
     params: {
       module: 'account',
@@ -173,8 +202,8 @@ const getDooplicatorTransactions = async (address) => {
       address: address,
       startblock: 16508485,
       endblock: 99999999,
-      page: 1,
-      offset: 10000,
+      page: page,
+      offset: offset,
       sort: 'desc',
       apikey: process.env.ETHERSCAN_API_KEY
     }
@@ -200,11 +229,13 @@ const getDooplicatorTransactions = async (address) => {
       from: transaction.from,
       value: transaction.value,
       functionName: decodedData?.name,
-      // ...info
+      ...info
     }
   });
   return results;
 }
+
+
 app.listen(PORT, () => {
   console.log(`Started on PORT ${PORT}`);
 });
