@@ -9,7 +9,7 @@ const {body, query, validationResult} = require('express-validator');
 const abiDecoder = require('abi-decoder');
 const app = express();
 const PORT = process.env.PORT || 8000;
-const {doopContracts, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS} = require('./constants');
+const {doopContracts, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS, DOOPLICATION_BLOCK} = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
 const { ethers, JsonRpcProvider } = require('ethers');
 
@@ -20,9 +20,9 @@ async function resolveENS(name) {
   return address;
 }
 
-const cacheGet = async (url, extra = {})=> {
+const cacheGet = async (url, extra = {}, clearCache = false)=> {
   const key = `${url}_${JSON.stringify(extra)}`
-  if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300)) {
+  if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
     return cacheServiceInstance.get(key);
   }
   let fullURL = url;
@@ -59,8 +59,7 @@ app.get('/doops', async (req, res)=>{
       module: 'account',
       action: 'txlist',
       address: address,
-      startblock: 16508485,
-      endblock: 99999999,
+      startblock: DOOPLICATION_BLOCK,
       page: 1,
       offset: 1000,
       sort: 'desc',
@@ -75,8 +74,7 @@ app.get('/doops', async (req, res)=>{
         module: 'account',
         action: 'txlist',
         address: address,
-        startblock: 16508485,
-        endblock: 99999999,
+        startblock: DOOPLICATION_BLOCK,
         page: page,
         offset: 1000,
         sort: 'desc',
@@ -199,21 +197,43 @@ app.get('/history', async (req, res)=>{
 
   res.json(results)
 })
+app.get('/feed', async(req, res)=> {
+  let {startBlock} = req.query;
 
-const getDooplicatorTransactions = async (address, page = 1, offset = 10000) => {
+  if(typeof startBlock === 'undefined' || startBlock < 1) {
+    res.json(results)
+    return;
+  } else {
+    startBlock = Number(startBlock) + 1
+  }
+
+  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS, true, 1, 1000, startBlock);
+  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS, true, 1, 1000, startBlock);
+  const results = [...doopMarket, ...dooplicators].sort((a,b)=>{
+    if (a['timeStamp'] > b['timeStamp']) {
+      return -1;
+    }
+    if (a['timeStamp'] < b['timeStamp']) {
+      return 1;
+    }
+    return 0;
+  })
+
+  res.json(results)
+})
+const getDooplicatorTransactions = async (address, clearCahce=false, page = 1, offset = 10000, startBlock = DOOPLICATION_BLOCK) => {
   const response = await cacheGet('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'txlist',
       address: address,
-      startblock: 16508485,
-      endblock: 99999999,
-      page: page,
-      offset: offset,
+      startBlock,
+      page: 1,
+      offset: 10000,
       sort: 'desc',
       apikey: process.env.ETHERSCAN_API_KEY
     }
-  });
+  }, clearCahce);
   const results = response.result.filter((transaction)=>{
     return transaction.functionName.substring(0,10) === 'dooplicate';
   }).map((transaction)=>{
@@ -229,8 +249,8 @@ const getDooplicatorTransactions = async (address, page = 1, offset = 10000) => 
       }
       return acc;
     },{});
-
     return {
+      blockNumber: transaction.blockNumber,
       timeStamp: transaction.timeStamp,
       hash: transaction.hash,
       from: transaction.from,

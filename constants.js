@@ -84,8 +84,10 @@ const dooplicate = [
     "type": "function"
   }
 ];
+
 const DOOPMARKET_ADDRESS = '0xcdef9b7949869cbeddcaeb398445e5972d8f564c';
 const DOOPLICATOR_ADDRESS = '0x36c3ec16da484240f74d05c0213186a3248e0e48';
+const DOPLICATION_BLOCK = 16508485;
 const doopContracts = {
   [DOOPMARKET_ADDRESS]: dooplicateItem,
   [DOOPLICATOR_ADDRESS]: dooplicate
@@ -94,5 +96,6 @@ const doopContracts = {
 module.exports = {
   DOOPMARKET_ADDRESS,
   DOOPLICATOR_ADDRESS,
+  DOPLICATION_BLOCK,
   doopContracts
 };
