@@ -9,7 +9,13 @@ const {body, query, validationResult} = require('express-validator');
 const abiDecoder = require('abi-decoder');
 const app = express();
 const PORT = process.env.PORT || 8000;
-const {doopContracts, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS, DOOPLICATION_BLOCK} = require('./constants');
+const {
+  doopContracts,
+  IPFS_DOMAIN,
+  DOOPLICATOR_ADDRESS,
+  DOOPMARKET_ADDRESS,
+  DOOPLICATION_BLOCK
+} = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
 const { ethers, JsonRpcProvider } = require('ethers');
 
@@ -124,7 +130,7 @@ app.get('/assets/:tokenId', async (req, res)=>{
   }
   const wearablesResponse = await cacheGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
 
-  const doodleResponse = await cacheGet(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
+  const doodleResponse = await cacheGet(`${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
   res.json({
     ...doodleResponse,
     ...wearablesResponse
