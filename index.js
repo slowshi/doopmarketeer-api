@@ -4,7 +4,7 @@ try {
 const express = require('express');
 const cors = require('cors')
 const bodyParser = require('body-parser');
-const axios = require('axios');
+const fetch = require('node-fetch');
 const {body, query, validationResult} = require('express-validator');
 const abiDecoder = require('abi-decoder');
 const app = express();
@@ -20,12 +20,18 @@ async function resolveENS(name) {
   return address;
 }
 
-const cacheAxiosGet = async (url, extra = {})=> {
+const cacheGet = async (url, extra = {})=> {
   const key = `${url}_${JSON.stringify(extra)}`
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300)) {
     return cacheServiceInstance.get(key);
   }
-  const response = await axios.get(url, extra);
+  let fullURL = url;
+  if(typeof extra.params !== 'undefined') {
+    fullURL = `${url}?${new URLSearchParams(extra.params)}`
+  }
+  const fetchRes = await fetch(fullURL);
+  const response = await fetchRes.json();
+  const result = response.result;
   cacheServiceInstance.set(key, response);
   return response;
 };
@@ -48,7 +54,7 @@ app.get('/doops', async (req, res)=>{
 
   let allResults = [];
   let page = 2;
-  const response =  await cacheAxiosGet('https://api.etherscan.io/api', {
+  const response =  await cacheGet('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'txlist',
@@ -61,10 +67,10 @@ app.get('/doops', async (req, res)=>{
       apikey: process.env.ETHERSCAN_API_KEY
     }
   });
-  let newResults = response.data.result;
+  let newResults = response.result;
   allResults = [...allResults, ...newResults];
   while(newResults.length > 0) {
-    const res =  await cacheAxiosGet('https://api.etherscan.io/api', {
+    const res =  await cacheGet('https://api.etherscan.io/api', {
       params: {
         module: 'account',
         action: 'txlist',
@@ -77,8 +83,8 @@ app.get('/doops', async (req, res)=>{
         apikey: process.env.ETHERSCAN_API_KEY
       }
     });
-    newResults = res.data.result;
-    allResults = [...allResults, ...res.data.result];
+    newResults = res.result;
+    allResults = [...allResults, ...res.result];
     page ++;
   }
   const results = allResults.filter((transaction)=>{
@@ -100,6 +106,7 @@ app.get('/doops', async (req, res)=>{
     return {
       blockNumber: transaction.blockNumber,
       timeStamp: transaction.timeStamp,
+      from: transaction.from,
       hash: transaction.hash,
       value: transaction.value,
       gas: transaction.gas,
@@ -117,9 +124,9 @@ app.get('/assets/:tokenId', async (req, res)=>{
     res.json({error:'No tokenId found'});
     return;
   }
-  const wearablesResponse = await cacheAxiosGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
+  const wearablesResponse = await cacheGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
 
-  const doodleResponse = await cacheAxiosGet(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
+  const doodleResponse = await cacheGet(`https://alchemy.mypinata.cloud/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS//${req.params.tokenId}`);
 
   res.json({
     ...doodleResponse.data,
@@ -195,7 +202,7 @@ app.get('/history', async (req, res)=>{
 })
 
 const getDooplicatorTransactions = async (address, page = 1, offset = 10000) => {
-  const response = await cacheAxiosGet('https://api.etherscan.io/api', {
+  const response = await cacheGet('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'txlist',
@@ -208,7 +215,7 @@ const getDooplicatorTransactions = async (address, page = 1, offset = 10000) => 
       apikey: process.env.ETHERSCAN_API_KEY
     }
   });
-  const results = response.data.result.filter((transaction)=>{
+  const results = response.result.filter((transaction)=>{
     return transaction.functionName.substring(0,10) === 'dooplicate';
   }).map((transaction)=>{
     abiDecoder.addABI(doopContracts[transaction.to]);
@@ -226,6 +233,7 @@ const getDooplicatorTransactions = async (address, page = 1, offset = 10000) => 
 
     return {
       timeStamp: transaction.timeStamp,
+      hash: transaction.hash,
       from: transaction.from,
       value: transaction.value,
       functionName: decodedData?.name,
