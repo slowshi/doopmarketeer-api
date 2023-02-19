@@ -85,7 +85,7 @@ app.get('/doops', async (req, res)=>{
         startblock: DOOPLICATION_BLOCK,
         endblock: blockNumber,
         page,
-        offset: 1,
+        offset: 100,
         apikey: process.env.ETHERSCAN_API_KEY
       }
     });
