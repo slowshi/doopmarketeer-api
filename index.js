@@ -66,7 +66,7 @@ app.get('/doops', async (req, res)=>{
       address: address,
       startblock: DOOPLICATION_BLOCK,
       page: 1,
-      offset: 10000,
+      offset: 1000,
       sort: 'desc',
       apikey: process.env.ETHERSCAN_API_KEY
     }
@@ -81,13 +81,13 @@ app.get('/doops', async (req, res)=>{
         address: address,
         startblock: DOOPLICATION_BLOCK,
         page: page,
-        offset: 10000,
+        offset: 1000,
         sort: 'desc',
         apikey: process.env.ETHERSCAN_API_KEY
       }
     });
-    newResults = res.result;
-    allResults = [...allResults, ...res.result];
+
+    allResults = [...allResults, ...newResults];
     page ++;
   }
   const results = allResults.filter((transaction)=>{
