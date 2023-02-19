@@ -86,7 +86,7 @@ app.get('/doops', async (req, res)=>{
         apikey: process.env.ETHERSCAN_API_KEY
       }
     });
-
+    newResults = res.result;
     allResults = [...allResults, ...newResults];
     page ++;
   }
