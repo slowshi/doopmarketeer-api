@@ -25,12 +25,28 @@ async function resolveENS(name) {
   const address = await provider.resolveName(name);
   return address;
 }
+async function getBlockNumber() {
+  const provider = new JsonRpcProvider('https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161');
+  const blockNumber = await provider.getBlockNumber();
+  return blockNumber;
+}
 
+const blockSortDesc = (a,b)=>{
+  if (a['blockNumber'] > b['blockNumber']) {
+    return -1;
+  }
+  if (a['blockNumber'] < b['blockNumber']) {
+    return 1;
+  }
+  return 0;
+};
 const cacheGet = async (url, extra = {}, clearCache = false)=> {
   let key = url;
   if(typeof extra.params !== 'undefined') {
     key = `${url}?${new URLSearchParams(extra.params)}`
   }
+  //we bust cache
+  // clearCache = true;
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
     return cacheServiceInstance.get(key);
   }
@@ -56,33 +72,20 @@ app.get('/doops', async (req, res)=>{
   if(address.includes('.eth')) {
     address = await resolveENS(address);
   }
-
+  const blockNumber = await getBlockNumber();
   let allResults = [];
-  let page = 2;
-  const response =  await cacheGet('https://api.etherscan.io/api', {
-    params: {
-      module: 'account',
-      action: 'txlist',
-      address: address,
-      startblock: DOOPLICATION_BLOCK,
-      page: 1,
-      offset: 1000,
-      sort: 'desc',
-      apikey: process.env.ETHERSCAN_API_KEY
-    }
-  });
-  let newResults = response.result;
-  allResults = [...allResults, ...newResults];
-  while(newResults.length > 0) {
+  let page = 1;
+  let newResults = [];
+  while(newResults.length > 0 || page === 1) {
     const res =  await cacheGet('https://api.etherscan.io/api', {
       params: {
         module: 'account',
         action: 'txlist',
-        address: address,
+        address,
         startblock: DOOPLICATION_BLOCK,
-        page: page,
-        offset: 1000,
-        sort: 'desc',
+        endblock: blockNumber,
+        page,
+        offset: 1,
         apikey: process.env.ETHERSCAN_API_KEY
       }
     });
@@ -107,8 +110,8 @@ app.get('/doops', async (req, res)=>{
     },{});
 
     return {
-      blockNumber: transaction.blockNumber,
-      timeStamp: transaction.timeStamp,
+      blockNumber: Number(transaction.blockNumber),
+      timeStamp: Number(transaction.timeStamp),
       from: transaction.from,
       hash: transaction.hash,
       value: transaction.value,
@@ -118,7 +121,8 @@ app.get('/doops', async (req, res)=>{
       functionName: decodedData?.name,
       ...info
     }
-  });
+  }).sort(blockSortDesc)
+
   res.json(results);
 });
 
@@ -190,15 +194,8 @@ app.get('/history', async (req, res)=>{
   }
   const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS);
   const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS);
-  const results = [...doopMarket,...dooplicators].sort((a,b)=>{
-    if (a['blockNumber'] > b['blockNumber']) {
-      return -1;
-    }
-    if (a['blockNumber'] < b['blockNumber']) {
-      return 1;
-    }
-    return 0;
-  }).slice((page - 1) * offset, offset * page);
+  const results = [...dooplicators, ...doopMarket]
+  .sort(blockSortDesc).slice((page - 1) * offset, offset * page);
 
   res.json(results)
 })
@@ -213,31 +210,26 @@ app.get('/feed', async(req, res)=> {
     startBlock = Number(startBlock) + 1
   }
 
-  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS, true, 1, 1000, startBlock);
-  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS, true, 1, 1000, startBlock);
+  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS, true, 100, startBlock);
+  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS, true, 100, startBlock);
 
-  const results = [...doopMarket, ...dooplicators].sort((a,b)=>{
-    if (a['blockNumber'] > b['blockNumber']) {
-      return -1;
-    }
-    if (a['blockNumber'] < b['blockNumber']) {
-      return 1;
-    }
-    return 0;
-  })
+  const results = [...doopMarket, ...dooplicators].sort(blockSortDesc)
 
   res.json(results)
 })
-const getDooplicatorTransactions = async (address, clearCahce=false, page = 1, offset = 10000, startBlock = DOOPLICATION_BLOCK) => {
+
+const getDooplicatorTransactions = async (address, clearCahce=false, offset = 10000, startBlock = DOOPLICATION_BLOCK) => {
+  const blockNumber = await getBlockNumber();
+  let page = 1;
   const response = await cacheGet('https://api.etherscan.io/api', {
     params: {
       module: 'account',
       action: 'txlist',
       address,
-      startBlock,
-      page: page,
-      offset: offset,
-      sort: 'desc',
+      startblock: startBlock,
+      endblock: blockNumber,
+      page,
+      offset,
       apikey: process.env.ETHERSCAN_API_KEY
     }
   }, clearCahce);
@@ -266,7 +258,7 @@ const getDooplicatorTransactions = async (address, clearCahce=false, page = 1, o
       ...info
     }
   });
-  return results;
+  return results.sort(blockSortDesc);
 }
 
 
