@@ -87,7 +87,7 @@ const dooplicate = [
 
 const DOOPMARKET_ADDRESS = '0xcdef9b7949869cbeddcaeb398445e5972d8f564c';
 const DOOPLICATOR_ADDRESS = '0x36c3ec16da484240f74d05c0213186a3248e0e48';
-const DOPLICATION_BLOCK = 16508485;
+const DOOPLICATION_BLOCK = 16508485;
 const IPFS_DOMAIN = 'https://ipfs.io/ipfs';
 
 const doopContracts = {
@@ -98,7 +98,7 @@ const doopContracts = {
 module.exports = {
   DOOPMARKET_ADDRESS,
   DOOPLICATOR_ADDRESS,
-  DOPLICATION_BLOCK,
+  DOOPLICATION_BLOCK,
   IPFS_DOMAIN,
   doopContracts
 };

@@ -27,15 +27,16 @@ async function resolveENS(name) {
 }
 
 const cacheGet = async (url, extra = {}, clearCache = false)=> {
-  const key = `${url}_${JSON.stringify(extra)}`
+  let key = url;
+  if(typeof extra.params !== 'undefined') {
+    key = `${url}?${new URLSearchParams(extra.params)}`
+  }
+  console.log(key);
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
+    console.log('cache is false?');
     return cacheServiceInstance.get(key);
   }
-  let fullURL = url;
-  if(typeof extra.params !== 'undefined') {
-    fullURL = `${url}?${new URLSearchParams(extra.params)}`
-  }
-  const fetchRes = await fetch(fullURL);
+  const fetchRes = await fetch(key);
   const response = await fetchRes.json();
   const result = response.result;
   cacheServiceInstance.set(key, response);
@@ -67,7 +68,7 @@ app.get('/doops', async (req, res)=>{
       address: address,
       startblock: DOOPLICATION_BLOCK,
       page: 1,
-      offset: 1000,
+      offset: 10000,
       sort: 'desc',
       apikey: process.env.ETHERSCAN_API_KEY
     }
@@ -82,7 +83,7 @@ app.get('/doops', async (req, res)=>{
         address: address,
         startblock: DOOPLICATION_BLOCK,
         page: page,
-        offset: 1000,
+        offset: 10000,
         sort: 'desc',
         apikey: process.env.ETHERSCAN_API_KEY
       }
@@ -138,8 +139,8 @@ app.get('/assets/:tokenId', async (req, res)=>{
 });
 
 app.get('/leaderboard', async (req, res)=>{
-  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS);
-  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS);
+  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS, true);
+  const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS, true);
   let leaderboard = [...doopMarket, ...dooplicators].reduce((acc, item)=>{
     let user = {
       timeStamp: 0,
@@ -189,13 +190,13 @@ app.get('/history', async (req, res)=>{
   } else {
     offset = Number(offset)
   }
-  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS);
   const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS);
-  const results = [...doopMarket, ...dooplicators].sort((a,b)=>{
-    if (a['timeStamp'] > b['timeStamp']) {
+  const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS);
+  const results = [...doopMarket,...dooplicators].sort((a,b)=>{
+    if (a['blockNumber'] > b['blockNumber']) {
       return -1;
     }
-    if (a['timeStamp'] < b['timeStamp']) {
+    if (a['blockNumber'] < b['blockNumber']) {
       return 1;
     }
     return 0;
@@ -215,11 +216,12 @@ app.get('/feed', async(req, res)=> {
 
   const doopMarket = await getDooplicatorTransactions(DOOPMARKET_ADDRESS, true, 1, 1000, startBlock);
   const dooplicators = await getDooplicatorTransactions(DOOPLICATOR_ADDRESS, true, 1, 1000, startBlock);
+
   const results = [...doopMarket, ...dooplicators].sort((a,b)=>{
-    if (a['timeStamp'] > b['timeStamp']) {
+    if (a['blockNumber'] > b['blockNumber']) {
       return -1;
     }
-    if (a['timeStamp'] < b['timeStamp']) {
+    if (a['blockNumber'] < b['blockNumber']) {
       return 1;
     }
     return 0;
@@ -232,10 +234,10 @@ const getDooplicatorTransactions = async (address, clearCahce=false, page = 1, o
     params: {
       module: 'account',
       action: 'txlist',
-      address: address,
+      address,
       startBlock,
-      page: 1,
-      offset: 10000,
+      page: page,
+      offset: offset,
       sort: 'desc',
       apikey: process.env.ETHERSCAN_API_KEY
     }
@@ -256,8 +258,8 @@ const getDooplicatorTransactions = async (address, clearCahce=false, page = 1, o
       return acc;
     },{});
     return {
-      blockNumber: transaction.blockNumber,
-      timeStamp: transaction.timeStamp,
+      blockNumber: Number(transaction.blockNumber),
+      timeStamp: Number(transaction.timeStamp),
       hash: transaction.hash,
       from: transaction.from,
       value: transaction.value,
