@@ -31,9 +31,7 @@ const cacheGet = async (url, extra = {}, clearCache = false)=> {
   if(typeof extra.params !== 'undefined') {
     key = `${url}?${new URLSearchParams(extra.params)}`
   }
-  console.log(key);
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
-    console.log('cache is false?');
     return cacheServiceInstance.get(key);
   }
   const fetchRes = await fetch(key);
@@ -204,6 +202,7 @@ app.get('/history', async (req, res)=>{
 
   res.json(results)
 })
+
 app.get('/feed', async(req, res)=> {
   let {startBlock} = req.query;
 
