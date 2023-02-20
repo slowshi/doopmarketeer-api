@@ -46,7 +46,7 @@ const cacheGet = async (url, extra = {}, clearCache = false)=> {
     key = `${url}?${new URLSearchParams(extra.params)}`
   }
   //we bust cache
-  // clearCache = true;
+  clearCache = true;
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
     return cacheServiceInstance.get(key);
   }
