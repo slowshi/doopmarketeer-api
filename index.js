@@ -18,6 +18,7 @@ const {
 } = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
 const { ethers, JsonRpcProvider } = require('ethers');
+const { request, gql } = require('graphql-request');
 
 
 async function resolveENS(name) {
@@ -132,11 +133,46 @@ app.get('/assets/:tokenId', async (req, res)=>{
     return;
   }
   const wearablesResponse = await cacheGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
+  const query = gql`
+      query SearchMarketplaceNFTs($input: SearchMarketplaceNFTsInputV2!) {
+      searchMarketplaceNFTsV2(input: $input) {
+        marketplaceNFTs {
+          editionID
+          name
+          description
+          activeListing {
+            vaultType
+            price
+          }
+        }
+        totalResults
+      }
+    }
+  `;
+  const costPromises = wearablesResponse.wearables.map((item)=>{
+    let collectionId = item.wearable_id !== '244' ? 'doodleswearables' : 'doodlesbetapass'
+    const variables = {
+      "input": {
+        "collectionID": collectionId,
+        "editionID": item.wearable_id,
+        "forSale": true,
+        "limit": 1,
+        "orderBy": "price_asc"
+      }
+    }
+    return request('https://api-v2.ongaia.com/graphql/', query, variables);
+  });
+
+  const costs = await Promise.all(costPromises);
+  const costResponse = costs.map((cost)=>cost['searchMarketplaceNFTsV2']['marketplaceNFTs'][0])
+  // costResponse['searchMarketplaceNFTsV2']['marketplaceNFTs']
+  // console.log(costResponse);
 
   const doodleResponse = await cacheGet(`${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
   res.json({
     ...doodleResponse,
-    ...wearablesResponse
+    ...wearablesResponse,
+    costs: costResponse
   });
 });
 
