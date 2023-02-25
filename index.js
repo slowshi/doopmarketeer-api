@@ -14,20 +14,22 @@ const {
   IPFS_DOMAIN,
   DOOPLICATOR_ADDRESS,
   DOOPMARKET_ADDRESS,
-  DOOPLICATION_BLOCK
+  DOODLE_ADDRESS,
+  DOOPLICATION_BLOCK,
+  ETHEREUM_RPC_URL
 } = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
-const { ethers, JsonRpcProvider } = require('ethers');
+const { ethers, JsonRpcProvider, Contract } = require('ethers');
 const { request, gql } = require('graphql-request');
-
+const {abi: DoopmarketABI} = require('./DoopmarketABI.json');
 
 async function resolveENS(name) {
-  const provider = new JsonRpcProvider('https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161');
+  const provider = new JsonRpcProvider(ETHEREUM_RPC_URL);
   const address = await provider.resolveName(name);
   return address;
 }
 async function getBlockNumber() {
-  const provider = new JsonRpcProvider('https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161');
+  const provider = new JsonRpcProvider(ETHEREUM_RPC_URL);
   const blockNumber = await provider.getBlockNumber();
   return blockNumber;
 }
@@ -133,6 +135,14 @@ app.get('/assets/:tokenId', async (req, res)=>{
     return;
   }
   const wearablesResponse = await cacheGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
+  const wearables = wearablesResponse.wearables.map((wearable)=>{
+    if (typeof wearable.wearable_id === 'undefined') {
+      return {
+        image_uri: 'https://doodles.app/images/dooplicator/missingDood.png'
+      }
+    }
+    return wearable;
+  })
   const query = gql`
       query SearchMarketplaceNFTs($input: SearchMarketplaceNFTsInputV2!) {
       searchMarketplaceNFTsV2(input: $input) {
@@ -149,7 +159,7 @@ app.get('/assets/:tokenId', async (req, res)=>{
       }
     }
   `;
-  const costPromises = wearablesResponse.wearables.map((item)=>{
+  const costPromises = wearables.filter((item)=>typeof item.wearable_id !== 'undefined').map((item)=>{
     let collectionId = item.wearable_id !== '244' ? 'doodleswearables' : 'doodlesbetapass'
     const variables = {
       "input": {
@@ -165,13 +175,11 @@ app.get('/assets/:tokenId', async (req, res)=>{
 
   const costs = await Promise.all(costPromises);
   const costResponse = costs.map((cost)=>cost['searchMarketplaceNFTsV2']['marketplaceNFTs'][0])
-  // costResponse['searchMarketplaceNFTsV2']['marketplaceNFTs']
-  // console.log(costResponse);
 
   const doodleResponse = await cacheGet(`${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
   res.json({
     ...doodleResponse,
-    ...wearablesResponse,
+    wearables,
     costs: costResponse
   });
 });
@@ -213,6 +221,31 @@ app.get('/leaderboard', async (req, res)=>{
   }, {})
   res.json(Object.values(leaderboard))
 })
+
+app.get('/doopmarket', async (req, res)=> {
+  const provider = new JsonRpcProvider(ETHEREUM_RPC_URL);
+  const doopmarketContract = new Contract(DOOPMARKET_ADDRESS, DoopmarketABI, provider);
+  const listing = await doopmarketContract.getListings(DOOPLICATOR_ADDRESS, DOODLE_ADDRESS);
+  const jsonStringify = JSON.stringify(listing, (key, value) => typeof value === 'bigint' ? value.toString() : value);
+  const jsonParse = JSON.parse(jsonStringify);
+
+  const result = jsonParse
+  .filter((item)=>item[2] === true
+  ).map((item)=>{
+    return {
+      tokenId: item[0],
+      value: Number(item[1][0]),
+      timeStamp: Number(item[1][1]),
+      from: '',
+      dooplicatorId: '',
+      to: item[1][2],
+      functionName: 'dooplicateItem'
+    }
+  })
+  // listing.map((item)=>console.log(item[1]));
+  // console.log(json);
+  res.json(result)
+});
 
 app.get('/history', async (req, res)=>{
   let {offset,page} = req.query;
@@ -289,6 +322,7 @@ const getDooplicatorTransactions = async (address, clearCahce=false, offset = 10
       timeStamp: Number(transaction.timeStamp),
       hash: transaction.hash,
       from: transaction.from,
+      to: transaction.to,
       value: transaction.value,
       functionName: decodedData?.name,
       ...info
