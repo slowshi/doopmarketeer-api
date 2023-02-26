@@ -242,8 +242,16 @@ app.get('/doopmarket', async (req, res)=> {
       functionName: 'dooplicateItem'
     }
   })
-  // listing.map((item)=>console.log(item[1]));
-  // console.log(json);
+  .sort((a,b)=>{
+    if (a['value'] < b['value']) {
+      return -1;
+    }
+    if (a['value'] > b['value']) {
+      return 1;
+    }
+    return 0;
+  })
+
   res.json(result)
 });
 
