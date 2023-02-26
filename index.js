@@ -11,12 +11,14 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const {
   doopContracts,
+  assumedWearablesMap,
   IPFS_DOMAIN,
   DOOPLICATOR_ADDRESS,
   DOOPMARKET_ADDRESS,
   DOODLE_ADDRESS,
   DOOPLICATION_BLOCK,
-  ETHEREUM_RPC_URL
+  ETHEREUM_RPC_URL,
+  UNKNOWN_WEARABLE
 } = require('./constants');
 const { cacheServiceInstance } = require("./cacheService");
 const { ethers, JsonRpcProvider, Contract } = require('ethers');
@@ -134,11 +136,27 @@ app.get('/assets/:tokenId', async (req, res)=>{
     res.json({error:'No tokenId found'});
     return;
   }
+  const doodleResponse = await cacheGet(`${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
+  const assumed = doodleResponse.attributes.reduce((acc, item)=>{
+    let ids = assumedWearablesMap[item.value];
+    if(typeof ids === 'undefined') ids = [];
+    return [...acc, ...ids]
+  },[]);
   const wearablesResponse = await cacheGet(`https://doodles.app/api/dooplicator/${req.params.tokenId}`);
+  let assumedIndex = 0;
   const wearables = wearablesResponse.wearables.map((wearable)=>{
+
     if (typeof wearable.wearable_id === 'undefined') {
-      return {
-        image_uri: 'https://doodles.app/images/dooplicator/missingDood.png'
+      if(assumedIndex < assumed.length) {
+        const assumedWearable = assumed[assumedIndex];
+        assumedIndex++
+        return {
+          ...assumedWearable
+        }
+      } else {
+        return {
+          image_uri: 'https://doodles.app/images/dooplicator/missingDood.png'
+        }
       }
     }
     return wearable;
@@ -176,7 +194,6 @@ app.get('/assets/:tokenId', async (req, res)=>{
   const costs = await Promise.all(costPromises);
   const costResponse = costs.map((cost)=>cost['searchMarketplaceNFTsV2']['marketplaceNFTs'][0])
 
-  const doodleResponse = await cacheGet(`${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
   res.json({
     ...doodleResponse,
     wearables,

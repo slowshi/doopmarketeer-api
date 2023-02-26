@@ -85,6 +85,34 @@ const dooplicate = [
   }
 ];
 
+const assumedWearablesMap = {
+  'pink backpack': [
+    {
+      wearable_id: '145',
+      hidden: true,
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmcFWt8iqcGuugxVWBDHDnPf3ukeKGCLJCCDh8V8dMgWD4.svg"
+    },
+    {
+      wearable_id: '146',
+      hidden: true,
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmQvBxq2wzr2aga1qB99J9MRVEkwKagqmQinUzf8kCNbaD.svg"
+    }
+  ],
+  'pink sweater with satchel': [
+    {
+      wearable_id: '152',
+      hidden: true,
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmXiK8x3w6pJvL34V9snUMdNSEEzhwcDvzguHJbXcBBnQd.svg"
+    },
+    {
+      wearable_id: '153',
+      hidden: true,
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmTbowsKDSmjWEawszrcwWuxaPW8TMBpbfxvFzBTixqhW2.svg"
+    }
+  ]
+}
+
+
 const DOOPMARKET_ADDRESS = '0xcdef9b7949869cbeddcaeb398445e5972d8f564c';
 const DOOPLICATOR_ADDRESS = '0x36c3ec16da484240f74d05c0213186a3248e0e48';
 const DOODLE_ADDRESS = '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e';
@@ -95,7 +123,7 @@ const doopContracts = {
   [DOOPMARKET_ADDRESS]: dooplicateItem,
   [DOOPLICATOR_ADDRESS]: dooplicate
 };
-
+const UNKNOWN_WEARABLE = 'https://doodles.app/images/dooplicator/missingDood.png';
 module.exports = {
   DOOPMARKET_ADDRESS,
   DOOPLICATOR_ADDRESS,
@@ -103,5 +131,7 @@ module.exports = {
   DOODLE_ADDRESS,
   ETHEREUM_RPC_URL,
   IPFS_DOMAIN,
+  UNKNOWN_WEARABLE,
+  assumedWearablesMap,
   doopContracts
 };
