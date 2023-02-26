@@ -86,28 +86,134 @@ const dooplicate = [
 ];
 
 const assumedWearablesMap = {
+  'blue backpack': [
+    {
+      wearable_id: '141',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmcw4oUMcarsbJUxPUeX2Ye4Tg8ir51fFHPU8xAefEmQRS.svg"
+    },
+    {
+      wearable_id: '142',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmZM8n38utE2kpRZ8zeRfxFwE1Z5c7qsndZhnmQANhKVav.svg"
+    }
+  ],
+  'yellow backpack': [
+    {
+      wearable_id: '143',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmNgpvNLKh3VWBrvi741NdEbVoMt4q8NYCbbNE5X4kJDbA.svg"
+    },
+    {
+      wearable_id: '144',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmdwUWZf7sVeaUu2UfsjQkhQ5HhdWJevLoReCCAYNsvqx2.svg"
+    }
+  ],
   'pink backpack': [
     {
       wearable_id: '145',
-      hidden: true,
       image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmcFWt8iqcGuugxVWBDHDnPf3ukeKGCLJCCDh8V8dMgWD4.svg"
     },
     {
       wearable_id: '146',
-      hidden: true,
       image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmQvBxq2wzr2aga1qB99J9MRVEkwKagqmQinUzf8kCNbaD.svg"
+    }
+  ],
+  'purple sweater with satchel': [
+    {
+      wearable_id: '150',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmaknaftP86RwTHSmMx35pyfVdVxA7GKnY4TKHpu8GYzEP.svg"
+    },
+    {
+      wearable_id: '151',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmdAHcNXJLJnv8e4J7iiwNtgHkjGpf8qp94MKWNtWrjkvD.svg"
     }
   ],
   'pink sweater with satchel': [
     {
       wearable_id: '152',
-      hidden: true,
       image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmXiK8x3w6pJvL34V9snUMdNSEEzhwcDvzguHJbXcBBnQd.svg"
     },
     {
       wearable_id: '153',
-      hidden: true,
       image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmTbowsKDSmjWEawszrcwWuxaPW8TMBpbfxvFzBTixqhW2.svg"
+    }
+  ],
+  'holographic bob': [
+    {
+      wearable_id: '191',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmd5Afurhr4cryUC9RVP7tAg9EkTVkPC25AvSJc8eTSGuk.svg"
+    }
+  ],
+  'holographic afro': [
+    {
+      wearable_id: '191',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmd5Afurhr4cryUC9RVP7tAg9EkTVkPC25AvSJc8eTSGuk.svg"
+    }
+  ],
+  'crown with holographic long': [
+    {
+      wearable_id: '191',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmd5Afurhr4cryUC9RVP7tAg9EkTVkPC25AvSJc8eTSGuk.svg"
+    }
+  ],
+  'green blazer': [
+    {
+      wearable_id: '147',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmbuXX5UmrzaVZSfdk9sVdXNpMHSyfiqQUdYVBukQtUDTb.svg"
+    },
+    {
+      wearable_id: '149',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmWhoP4LF4dthcfcebumLchZRdrGQ271gSPMvhvt1XcYdb.svg"
+    }
+  ],
+  'blue blazer': [
+    {
+      wearable_id: '147',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmbuXX5UmrzaVZSfdk9sVdXNpMHSyfiqQUdYVBukQtUDTb.svg"
+    },
+    {
+      wearable_id: '148',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmbpUyYGtkvQArDfXr4q3oiNusND1w3ZtMbUfnHg9Vmz1E.svg"
+    }
+  ],
+  'purple chain': [
+    {
+      wearable_id: '154',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmQeHtyC2oM7cdxhgRNG3WZZmCPxV6EmaZwyewjKQJRmTW.svg"
+    },
+    {
+      wearable_id: '155',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmaDWeeyQFCk4Vj4K5HUhpkACAsDVPKM3w9wrvUZwHmsQ3.svg"
+    }
+  ],
+  'holographic sweater': [
+    {
+      wearable_id: '156',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmWFBjnZVCVHaM1AKTofEnVKcL6qmdzm29guftpSd7thWu.svg"
+    },
+    {
+      wearable_id: '157',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmVSkBAuQvD9KPLbMcpJCpr4SmrDh9J2SbgXUFQgWhiwNN.svg"
+    }
+  ],
+  'pickle': [
+    {
+      wearable_id: '70',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmWMVYdYZKA3JMRcF3qnZsKhhYPT9yD14k9sfao5pJP2x3.svg"
+    }
+  ],
+  'rainbow puke': [
+    {
+      wearable_id: '48',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmWamcDPvcttpa7h9cb8QBxdvXT7waxZQ8wCodm16npBEH.svg"
+    },
+    {
+      wearable_id: '49',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmbLvCHahUqrATz2k1mWBGkySsbayAeWPrLzvEKHjL5FMg.svg"
+    }
+  ],
+  'flower': [
+    {
+      wearable_id: '67',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmV9TM6w34Gn2eZWsEQUue9fEQybVbv67Ufb8btcbnyXeK.svg"
     }
   ]
 }
