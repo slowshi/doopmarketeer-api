@@ -136,22 +136,28 @@ const assumedWearablesMap = {
       image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmTbowsKDSmjWEawszrcwWuxaPW8TMBpbfxvFzBTixqhW2.svg"
     }
   ],
+  'holographic beard': [
+    {
+      wearable_id: '61',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmcgyb43SopvWd8z112QP1PTaP8qUvX7B1pXNZ98c9GNMg.svg"
+    }
+  ],
   'holographic bob': [
     {
-      wearable_id: '191',
-      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmd5Afurhr4cryUC9RVP7tAg9EkTVkPC25AvSJc8eTSGuk.svg"
+      wearable_id: '61',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmcgyb43SopvWd8z112QP1PTaP8qUvX7B1pXNZ98c9GNMg.svg"
     }
   ],
   'holographic afro': [
     {
-      wearable_id: '191',
-      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmd5Afurhr4cryUC9RVP7tAg9EkTVkPC25AvSJc8eTSGuk.svg"
+      wearable_id: '61',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmcgyb43SopvWd8z112QP1PTaP8qUvX7B1pXNZ98c9GNMg.svg"
     }
   ],
   'crown with holographic long': [
     {
-      wearable_id: '191',
-      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmd5Afurhr4cryUC9RVP7tAg9EkTVkPC25AvSJc8eTSGuk.svg"
+      wearable_id: '61',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/Qmcgyb43SopvWd8z112QP1PTaP8qUvX7B1pXNZ98c9GNMg.svg"
     }
   ],
   'green blazer': [
@@ -214,6 +220,24 @@ const assumedWearablesMap = {
     {
       wearable_id: '67',
       image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmV9TM6w34Gn2eZWsEQUue9fEQybVbv67Ufb8btcbnyXeK.svg"
+    }
+  ],
+  'rainbow': [
+    {
+      wearable_id: '55',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmeaJTJfuw4bAgxjSXRkiKPmHxQx5PrH3ASy5V3WNGyqTq.svg"
+    }
+  ],
+  'devil': [
+    {
+      wearable_id: '68',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmTCCokbvdXCHW1pGAw5BPR5E1ZtTpF1xL8bncPy1Scao4.svg"
+    }
+  ],
+  'coffee': [
+    {
+      wearable_id: '54',
+      image_uri: "https://d1zu9f2anwwksd.cloudfront.net/QmcbyY8xJ9J5juWoEcoqBfNMwcb7q2j6mNvMDNY7LfP9oU.svg"
     }
   ]
 }
