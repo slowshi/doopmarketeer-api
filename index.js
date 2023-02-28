@@ -115,7 +115,6 @@ app.get('/doops', async (req, res)=>{
     },{});
 
     return {
-      transaction,
       blockNumber: Number(transaction.blockNumber),
       timeStamp: Number(transaction.timeStamp),
       from: transaction.from,
