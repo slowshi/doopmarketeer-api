@@ -51,7 +51,7 @@ const cacheGet = async (url, extra = {}, clearCache = false)=> {
     key = `${url}?${new URLSearchParams(extra.params)}`
   }
   //we bust cache
-  clearCache = true;
+  // clearCache = true;
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
     return cacheServiceInstance.get(key);
   }
@@ -99,7 +99,7 @@ app.get('/doops', async (req, res)=>{
     page ++;
   }
   const results = allResults.filter((transaction)=>{
-    return [DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 && transaction.functionName.substring(0,10) === 'dooplicate';
+    return [DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 && transaction.functionName.substring(0,10) === 'dooplicate' && transaction.isError === "0";
   }).map((transaction)=>{
     abiDecoder.addABI(doopContracts[transaction.to]);
     const decodedData = abiDecoder.decodeMethod(transaction.input)
@@ -115,6 +115,7 @@ app.get('/doops', async (req, res)=>{
     },{});
 
     return {
+      transaction,
       blockNumber: Number(transaction.blockNumber),
       timeStamp: Number(transaction.timeStamp),
       from: transaction.from,
