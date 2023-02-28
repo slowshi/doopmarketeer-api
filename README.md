@@ -8,6 +8,9 @@ Requirements:
 This project uses dotenv for environment variables. You will need to provide these if you want it to work.
 ```
 ETHERSCAN_API_KEY="SECRET"
+GEM_API_KEY="SECRET"
+ALCHEMY_API_KEY="SECRET"
+
 ```
 
 ### doops - Gets dooplications from either DoopMarket or Dooplicators
