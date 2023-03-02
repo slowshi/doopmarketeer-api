@@ -1,6 +1,49 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+try {
+  const dotenv = require('dotenv').config();
+} catch(_) {}
+const express = require('express');
+const cors = require('cors')
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
+const {body, query, validationResult} = require('express-validator');
+const abiDecoder = require('abi-decoder');
+const app = express();
+const PORT = process.env.PORT || 8000;
+const {
+  doopContracts,
+  assumedWearablesMap,
+  IPFS_DOMAIN,
+  DOOPLICATOR_ADDRESS,
+  DOOPMARKET_ADDRESS,
+  DOODLE_ADDRESS,
+  DOOPLICATION_BLOCK,
+  ETHEREUM_RPC_URL,
+  UNKNOWN_WEARABLE
+} = require('./constants');
+const { cacheServiceInstance } = require("./cacheService");
+const { ethers, JsonRpcProvider, Contract } = require('ethers');
+const { request, gql } = require('graphql-request');
+const {abi: DoopmarketABI} = require('../abis/DoopmarketABI.json');
+
+async function resolveENS(name) {
+  const provider = new JsonRpcProvider(ETHEREUM_RPC_URL);
+  const address = await provider.resolveName(name);
+  return address;
+}
+async function getBlockNumber() {
+  const provider = new JsonRpcProvider(ETHEREUM_RPC_URL);
+  const blockNumber = await provider.getBlockNumber();
+  return blockNumber;
+}
+
+const blockSortDesc = (a,b)=>{
+  if (a['blockNumber'] > b['blockNumber']) {
+    return -1;
+  }
+  if (a['blockNumber'] < b['blockNumber']) {
+    return 1;
+  }
+  return 0;
 };
 const cacheGet = async (url, extra = {}, clearCache = false)=> {
   let key = url;
@@ -12,33 +55,19 @@ const cacheGet = async (url, extra = {}, clearCache = false)=> {
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
     return cacheServiceInstance.get(key);
   }
-  const response = await fetchWithRetry(key);
+  const fetchRes = await fetch(key);
+  const response = await fetchRes.json();
   const result = response.result;
   cacheServiceInstance.set(key, response);
   return response;
 };
-
-async function fetchWithRetry(url, retries = 5, timeout = 50) {
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    if (retries > 0) {
-      console.error(`Failed to fetch data: ${error.message}. Retrying...`);
-      await new Promise((resolve) => setTimeout(resolve, timeout));
-      return await fetchWithRetry(url, retries - 1);
-    } else {
-      throw error;
-    }
-  }
-}
 
 app.use(cors())
 app.use(bodyParser.json());
 app.get('/', (req, res)=>{
   res.json({})
 })
+
 app.get('/doops', async (req, res)=>{
   if(typeof req.query.address === 'undefined') {
     res.json({error:'No address found'});
@@ -58,7 +87,6 @@ app.get('/doops', async (req, res)=>{
         module: 'account',
         action: 'txlist',
         address,
-<<<<<<< HEAD
         startblock: DOOPLICATION_BLOCK,
         endblock: blockNumber,
         page,
@@ -453,46 +481,3 @@ const getDooplicatorTransactions = async (address, clearCahce=false, offset = 10
 app.listen(PORT, () => {
   console.log(`Started on PORT ${PORT}`);
 });
-//# sourceMappingURL=index.js.map
-=======
-        startblock: startBlock,
-        endblock: blockNumber,
-        page,
-        offset,
-        apikey: process.env.ETHERSCAN_API_KEY
-      }
-    }, clearCahce);
-    const results = response.result.filter((transaction)=>{
-      return transaction.functionName.substring(0,10) === 'dooplicate' && transaction.isError === "0";
-    }).map((transaction)=>{
-      abiDecoder.addABI(doopContracts[transaction.to]);
-      const decodedData = abiDecoder.decodeMethod(transaction.input)
-      info = [...decodedData.params].reduce((acc, param)=>{
-        const names = ['tokenId', 'dooplicatorId', 'addressOnTheOtherSide'];
-        if (names.indexOf(param.name) > -1) {
-          acc = {
-            ...acc,
-            [param.name]: param.value
-          }
-        }
-        return acc;
-      },{});
-      return {
-        blockNumber: Number(transaction.blockNumber),
-        timeStamp: Number(transaction.timeStamp),
-        hash: transaction.hash,
-        from: transaction.from,
-        to: transaction.to,
-        value: transaction.value,
-        functionName: decodedData?.name,
-        ...info
-      }
-    });
-    return results.sort(blockSortDesc);
-  }
-
-
-  app.listen(PORT, () => {
-    console.log(`Started on PORT ${PORT}`);
-  });
->>>>>>> f49f5b3 (added entry)
