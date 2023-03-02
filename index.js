@@ -377,18 +377,29 @@ app.get('/doodle-floor', async(req, res)=> {
 })
 
 app.get('/doop-floor', async(req, res)=> {
+  let {rarity} = req.query;
+
+  if(typeof rarity === 'undefined' || rarity < 0) {
+    rarity = 0
+  } else {
+    rarity = Number(rarity)
+  }
+  if(rarity > 2) {
+    rarity = 2;
+  }
+  const rarityMap = ['very common', 'common', 'rare']
   const headers = {
     'Content-Type': 'application/json',
     'origin':'https://www.gem.xyz',
     'referer':'https://www.gem.xyz/',
     'x-api-key': process.env.GEM_API_KEY
   };
-  const veryCommonBody = {
+  const body = {
     "filters": {
       "slug": "the-dooplicator",
       "traits": {
         "Rarity": [
-          "very common"
+          `${rarityMap[rarity]}`
         ],
         "OG Wearables charge": [
           "available"
@@ -408,94 +419,18 @@ app.get('/doop-floor', async(req, res)=> {
       "supportsWyvern": 1,
     },
     "offset": 0,
-    "limit": 1,
+    "limit": 5,
     "status": [
       "buy_now"
     ]
   };
-  const commonBody = {
-    "filters": {
-      "slug": "the-dooplicator",
-      "traits": {
-        "Rarity": [
-          "common"
-        ],
-        "OG Wearables charge": [
-          "available"
-        ]
-      }
-    },
-    "sort": {
-      "currentEthPrice": "asc"
-    },
-    "fields": {
-      "id": 1,
-      "tokenId": 1,
-      "priceInfo": 1,
-      "currentBasePrice": 1,
-      "paymentToken": 1,
-      "marketUrl": 1,
-      "supportsWyvern": 1,
-    },
-    "offset": 0,
-    "limit": 1,
-    "status": [
-      "buy_now"
-    ]
-  };
-  const rareBody = {
-    "filters": {
-      "slug": "the-dooplicator",
-      "traits": {
-        "Rarity": [
-          "rare"
-        ],
-        "OG Wearables charge": [
-          "available"
-        ]
-      }
-    },
-    "sort": {
-      "currentEthPrice": "asc"
-    },
-    "fields": {
-      "id": 1,
-      "tokenId": 1,
-      "priceInfo": 1,
-      "currentBasePrice": 1,
-      "paymentToken": 1,
-      "marketUrl": 1,
-      "supportsWyvern": 1,
-    },
-    "offset": 0,
-    "limit": 1,
-    "status": [
-      "buy_now"
-    ]
-  };
-  const vcRes = await fetch('https://api-v2-1.gemlabs.xyz/assets', {
+  const response = await fetch('https://api-v2-1.gemlabs.xyz/assets', {
     method: 'POST',
-    body: JSON.stringify(veryCommonBody),
+    body: JSON.stringify(body),
     headers: headers
   })
-  const vcResJSON = await vcRes.json();
-  const cRes = await fetch('https://api-v2-1.gemlabs.xyz/assets', {
-    method: 'POST',
-    body: JSON.stringify(commonBody),
-    headers: headers
-  })
-  const cResJSON = await cRes.json();
-  const rRes = await fetch('https://api-v2-1.gemlabs.xyz/assets', {
-    method: 'POST',
-    body: JSON.stringify(rareBody),
-    headers: headers
-  })
-  const rResJSON = await rRes.json();
-  res.json([
-    vcResJSON.data[0],
-    cResJSON.data[0],
-    rResJSON.data[0]
-  ])
+  const responseJSON = await response.json();
+  res.json(responseJSON.data)
 })
 
 const getDooplicatorTransactions = async (address, clearCahce=false, offset = 10000, startBlock = DOOPLICATION_BLOCK) => {
@@ -514,7 +449,7 @@ const getDooplicatorTransactions = async (address, clearCahce=false, offset = 10
     }
   }, clearCahce);
   const results = response.result.filter((transaction)=>{
-    return transaction.functionName.substring(0,10) === 'dooplicate';
+    return transaction.functionName.substring(0,10) === 'dooplicate' && transaction.isError === "0";
   }).map((transaction)=>{
     abiDecoder.addABI(doopContracts[transaction.to]);
     const decodedData = abiDecoder.decodeMethod(transaction.input)
