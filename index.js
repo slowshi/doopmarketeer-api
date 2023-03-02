@@ -55,19 +55,32 @@ const cacheGet = async (url, extra = {}, clearCache = false)=> {
   if (cacheServiceInstance.has(key) && !cacheServiceInstance.isExpired(key, 300) && !clearCache) {
     return cacheServiceInstance.get(key);
   }
-  const fetchRes = await fetch(key);
-  const response = await fetchRes.json();
+  const response = await fetchWithRetry(key);
   const result = response.result;
   cacheServiceInstance.set(key, response);
   return response;
 };
+
+async function fetchWithRetry(url, retries = 3) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (retries > 0) {
+      console.error(`Failed to fetch data: ${error.message}. Retrying...`);
+      return await fetchWithRetry(url, retries - 1);
+    } else {
+      throw error;
+    }
+  }
+}
 
 app.use(cors())
 app.use(bodyParser.json());
 app.get('/', (req, res)=>{
   res.json({})
 })
-
 app.get('/doops', async (req, res)=>{
   if(typeof req.query.address === 'undefined') {
     res.json({error:'No address found'});
