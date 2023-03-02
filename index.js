@@ -61,7 +61,7 @@ const cacheGet = async (url, extra = {}, clearCache = false)=> {
   return response;
 };
 
-async function fetchWithRetry(url, retries = 3) {
+async function fetchWithRetry(url, retries = 5, timeout = 50) {
   try {
     const response = await fetch(url);
     const data = await response.json();
@@ -69,6 +69,7 @@ async function fetchWithRetry(url, retries = 3) {
   } catch (error) {
     if (retries > 0) {
       console.error(`Failed to fetch data: ${error.message}. Retrying...`);
+      await new Promise((resolve) => setTimeout(resolve, timeout));
       return await fetchWithRetry(url, retries - 1);
     } else {
       throw error;
