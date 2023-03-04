@@ -16,12 +16,12 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
-const { body, query, validationResult } = require('express-validator');
+const { body, query } = require('express-validator');
 const abiDecoder = require('abi-decoder');
 const app = express();
 const PORT = process.env.PORT || 8000;
-const { doopContracts, assumedWearablesMap, IPFS_DOMAIN, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS, DOODLE_ADDRESS, DOOPLICATION_BLOCK, ETHEREUM_RPC_URL, UNKNOWN_WEARABLE } = require('./constants');
-const { cacheServiceInstance } = require("./cacheService");
+const { doopContracts, assumedWearablesMap, IPFS_DOMAIN, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS, DOODLE_ADDRESS, DOOPLICATION_BLOCK, ETHEREUM_RPC_URL, } = require('./constants');
+const { cacheServiceInstance } = require('./cacheService');
 const { ethers, JsonRpcProvider, Contract } = require('ethers');
 const { request, gql } = require('graphql-request');
 const { abi: DoopmarketABI } = require('../abis/DoopmarketABI.json');
@@ -60,7 +60,6 @@ const cacheGet = (url, extra = {}, clearCache = false) => __awaiter(void 0, void
     }
     const fetchRes = yield fetch(key);
     const response = yield fetchRes.json();
-    const result = response.result;
     cacheServiceInstance.set(key, response);
     return response;
 });
@@ -92,16 +91,20 @@ app.get('/doops', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 endblock: blockNumber,
                 page,
                 offset: 100,
-                apikey: process.env.ETHERSCAN_API_KEY
-            }
+                apikey: process.env.ETHERSCAN_API_KEY,
+            },
         });
         newResults = res.result;
         allResults = [...allResults, ...newResults];
         page++;
     }
-    const results = allResults.filter((transaction) => {
-        return [DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 && transaction.functionName.substring(0, 10) === 'dooplicate' && transaction.isError === "0";
-    }).map((transaction) => {
+    const results = allResults
+        .filter((transaction) => {
+        return ([DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 &&
+            transaction.functionName.substring(0, 10) === 'dooplicate' &&
+            transaction.isError === '0');
+    })
+        .map((transaction) => {
         abiDecoder.addABI(doopContracts[transaction.to]);
         const decodedData = abiDecoder.decodeMethod(transaction.input);
         info = [...decodedData.params].reduce((acc, param) => {
@@ -112,7 +115,8 @@ app.get('/doops', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return acc;
         }, {});
         return Object.assign({ blockNumber: Number(transaction.blockNumber), timeStamp: Number(transaction.timeStamp), from: transaction.from, hash: transaction.hash, value: transaction.value, gas: transaction.gas, gasPrice: transaction.gasPrice, cumulativeGasUsed: transaction.cumulativeGasUsed, functionName: decodedData === null || decodedData === void 0 ? void 0 : decodedData.name }, info);
-    }).sort(blockSortDesc);
+    })
+        .sort(blockSortDesc);
     res.json(results);
 }));
 app.get('/assets/:tokenId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -138,14 +142,14 @@ app.get('/assets/:tokenId', (req, res) => __awaiter(void 0, void 0, void 0, func
             }
             else {
                 return {
-                    image_uri: 'https://doodles.app/images/dooplicator/missingDood.png'
+                    image_uri: 'https://doodles.app/images/dooplicator/missingDood.png',
                 };
             }
         }
         return wearable;
     });
     const query = gql `
-      query SearchMarketplaceNFTs($input: SearchMarketplaceNFTsInputV2!) {
+    query SearchMarketplaceNFTs($input: SearchMarketplaceNFTsInputV2!) {
       searchMarketplaceNFTsV2(input: $input) {
         marketplaceNFTs {
           editionID
@@ -160,16 +164,18 @@ app.get('/assets/:tokenId', (req, res) => __awaiter(void 0, void 0, void 0, func
       }
     }
   `;
-    const costPromises = wearables.filter((item) => typeof item.wearable_id !== 'undefined').map((item) => {
+    const costPromises = wearables
+        .filter((item) => typeof item.wearable_id !== 'undefined')
+        .map((item) => {
         let collectionId = item.wearable_id !== '244' ? 'doodleswearables' : 'doodlesbetapass';
         const variables = {
-            "input": {
-                "collectionID": collectionId,
-                "editionID": item.wearable_id,
-                "forSale": true,
-                "limit": 1,
-                "orderBy": "price_asc"
-            }
+            input: {
+                collectionID: collectionId,
+                editionID: item.wearable_id,
+                forSale: true,
+                limit: 1,
+                orderBy: 'price_asc',
+            },
         };
         return request('https://api-v2.ongaia.com/graphql/', query, variables);
     });
@@ -186,7 +192,7 @@ app.get('/leaderboard', (req, res) => __awaiter(void 0, void 0, void 0, function
             address: '',
             dooplicate: 0,
             dooplicateItem: 0,
-            value: 0
+            value: 0,
         };
         if (typeof acc[item.from] === 'undefined') {
             user = {
@@ -194,7 +200,7 @@ app.get('/leaderboard', (req, res) => __awaiter(void 0, void 0, void 0, function
                 address: item.from,
                 dooplicate: item.functionName === 'dooplicate' ? 1 : 0,
                 dooplicateItem: item.functionName === 'dooplicateItem' ? 1 : 0,
-                value: Number(item.value)
+                value: Number(item.value),
             };
         }
         else {
@@ -210,10 +216,11 @@ app.get('/doopmarket', (req, res) => __awaiter(void 0, void 0, void 0, function*
     const provider = new JsonRpcProvider(ETHEREUM_RPC_URL);
     const doopmarketContract = new Contract(DOOPMARKET_ADDRESS, DoopmarketABI, provider);
     const listing = yield doopmarketContract.getListings(DOOPLICATOR_ADDRESS, DOODLE_ADDRESS);
-    const jsonStringify = JSON.stringify(listing, (key, value) => typeof value === 'bigint' ? value.toString() : value);
+    const jsonStringify = JSON.stringify(listing, (key, value) => (typeof value === 'bigint' ? value.toString() : value));
     const jsonParse = JSON.parse(jsonStringify);
     const result = jsonParse
-        .filter((item) => item[2] === true).map((item) => {
+        .filter((item) => item[2] === true)
+        .map((item) => {
         return {
             tokenId: item[0],
             value: Number(item[1][0]),
@@ -221,7 +228,7 @@ app.get('/doopmarket', (req, res) => __awaiter(void 0, void 0, void 0, function*
             from: '',
             dooplicatorId: '',
             to: item[1][2],
-            functionName: 'dooplicateItem'
+            functionName: 'dooplicateItem',
         };
     })
         .sort((a, b) => {
@@ -251,8 +258,7 @@ app.get('/history', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     const dooplicators = yield getDooplicatorTransactions(DOOPLICATOR_ADDRESS);
     const doopMarket = yield getDooplicatorTransactions(DOOPMARKET_ADDRESS);
-    const results = [...dooplicators, ...doopMarket]
-        .sort(blockSortDesc).slice((page - 1) * offset, offset * page);
+    const results = [...dooplicators, ...doopMarket].sort(blockSortDesc).slice((page - 1) * offset, offset * page);
     res.json(results);
 }));
 app.get('/feed', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -285,36 +291,34 @@ app.get('/doodle-floor', (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
     const headers = {
         'Content-Type': 'application/json',
-        'origin': 'https://www.gem.xyz',
-        'referer': 'https://www.gem.xyz/',
-        'x-api-key': process.env.GEM_API_KEY
+        origin: 'https://www.gem.xyz',
+        referer: 'https://www.gem.xyz/',
+        'x-api-key': process.env.GEM_API_KEY,
     };
     const body = {
-        "filters": {
-            "slug": "doodles-official"
+        filters: {
+            slug: 'doodles-official',
         },
-        "sort": {
-            "currentEthPrice": "asc"
+        sort: {
+            currentEthPrice: 'asc',
         },
-        "fields": {
-            "id": 1,
-            "tokenId": 1,
-            "priceInfo": 1,
-            "currentBasePrice": 1,
-            "paymentToken": 1,
-            "marketUrl": 1,
-            "supportsWyvern": 1
+        fields: {
+            id: 1,
+            tokenId: 1,
+            priceInfo: 1,
+            currentBasePrice: 1,
+            paymentToken: 1,
+            marketUrl: 1,
+            supportsWyvern: 1,
         },
-        "offset": (page - 1) * offset,
-        "limit": offset,
-        "status": [
-            "buy_now"
-        ]
+        offset: (page - 1) * offset,
+        limit: offset,
+        status: ['buy_now'],
     };
     const response = yield fetch('https://api-v2-1.gemlabs.xyz/assets', {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: headers
+        headers: headers,
     });
     let undooped = [];
     const responseJSON = yield response.json();
@@ -323,10 +327,7 @@ app.get('/doodle-floor', (req, res) => __awaiter(void 0, void 0, void 0, functio
         const wearablesResponse = yield cacheGet(`https://doodles.app/api/dooplicator/${tokenId}`);
         const isDooplicated = wearablesResponse.wearables.filter((wearable) => typeof wearable.wearable_id === 'undefined').length === 0;
         if (!isDooplicated) {
-            undooped = [
-                ...undooped,
-                { tokenId, marketUrl, currentBasePrice, supportsWyvern }
-            ];
+            undooped = [...undooped, { tokenId, marketUrl, currentBasePrice, supportsWyvern }];
         }
     }
     res.json(undooped);
@@ -345,44 +346,38 @@ app.get('/doop-floor', (req, res) => __awaiter(void 0, void 0, void 0, function*
     const rarityMap = ['very common', 'common', 'rare'];
     const headers = {
         'Content-Type': 'application/json',
-        'origin': 'https://www.gem.xyz',
-        'referer': 'https://www.gem.xyz/',
-        'x-api-key': process.env.GEM_API_KEY
+        origin: 'https://www.gem.xyz',
+        referer: 'https://www.gem.xyz/',
+        'x-api-key': process.env.GEM_API_KEY,
     };
     const body = {
-        "filters": {
-            "slug": "the-dooplicator",
-            "traits": {
-                "Rarity": [
-                    `${rarityMap[rarity]}`
-                ],
-                "OG Wearables charge": [
-                    "available"
-                ]
-            }
+        filters: {
+            slug: 'the-dooplicator',
+            traits: {
+                Rarity: [`${rarityMap[rarity]}`],
+                'OG Wearables charge': ['available'],
+            },
         },
-        "sort": {
-            "currentEthPrice": "asc"
+        sort: {
+            currentEthPrice: 'asc',
         },
-        "fields": {
-            "id": 1,
-            "tokenId": 1,
-            "priceInfo": 1,
-            "currentBasePrice": 1,
-            "paymentToken": 1,
-            "marketUrl": 1,
-            "supportsWyvern": 1,
+        fields: {
+            id: 1,
+            tokenId: 1,
+            priceInfo: 1,
+            currentBasePrice: 1,
+            paymentToken: 1,
+            marketUrl: 1,
+            supportsWyvern: 1,
         },
-        "offset": 0,
-        "limit": 5,
-        "status": [
-            "buy_now"
-        ]
+        offset: 0,
+        limit: 5,
+        status: ['buy_now'],
     };
     const response = yield fetch('https://api-v2-1.gemlabs.xyz/assets', {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: headers
+        headers: headers,
     });
     const responseJSON = yield response.json();
     res.json(responseJSON.data);
@@ -399,12 +394,14 @@ const getDooplicatorTransactions = (address, clearCahce = false, offset = 10000,
             endblock: blockNumber,
             page,
             offset,
-            apikey: process.env.ETHERSCAN_API_KEY
-        }
+            apikey: process.env.ETHERSCAN_API_KEY,
+        },
     }, clearCahce);
-    const results = response.result.filter((transaction) => {
-        return transaction.functionName.substring(0, 10) === 'dooplicate' && transaction.isError === "0";
-    }).map((transaction) => {
+    const results = response.result
+        .filter((transaction) => {
+        return transaction.functionName.substring(0, 10) === 'dooplicate' && transaction.isError === '0';
+    })
+        .map((transaction) => {
         abiDecoder.addABI(doopContracts[transaction.to]);
         const decodedData = abiDecoder.decodeMethod(transaction.input);
         info = [...decodedData.params].reduce((acc, param) => {

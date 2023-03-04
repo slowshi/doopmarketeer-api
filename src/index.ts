@@ -1,16 +1,22 @@
 import express, { Request, Response } from 'express'
-import dotenv from 'dotenv'
+import cors from 'cors'
+import bodyParser from 'body-parser'
+import { doops, history, feed, leaderboard } from './controller/DoopTransactions'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 8000
-const test = 1
+app.use(cors())
+app.use(bodyParser.json())
 
-app.get('/', (_req: Request, res: Response) => {
-  return res.send('Express Typescript on Vercel')
+app.get('/', (req: Request, res: Response) => {
+  res.json({})
 })
-app.get('/ping', (_req: Request, res: Response) => {
-  return res.send('pong 🏓')
-})
+app.get('/doops', doops)
+app.get('/history', history)
+app.get('/feed', feed)
+app.get('/leaderboard', leaderboard)
 app.listen(port, () => {
   return console.log(`Server is listening on ${port}`)
 })
