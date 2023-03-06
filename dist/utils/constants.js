@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doopContracts = exports.assumedWearablesMap = exports.UNKNOWN_WEARABLE = exports.IPFS_DOMAIN = exports.ETHEREUM_RPC_URL = exports.DOODLE_ADDRESS = exports.DOOPLICATION_BLOCK = exports.DOOPLICATOR_ADDRESS = exports.DOOPMARKET_ADDRESS = void 0;
+exports.doopContracts = exports.assumedWearablesMap = exports.UNKNOWN_WEARABLE = exports.GEM_ASSETS_URL = exports.DOODLE_METADATA_URL = exports.DOOPLICATOR_WEARABLES_URL = exports.IPFS_URL = exports.ETHEREUM_RPC_URL = exports.DOODLE_ADDRESS = exports.DOOPLICATION_BLOCK = exports.DOOPLICATOR_ADDRESS = exports.DOOPMARKET_ADDRESS = void 0;
 const dooplicateItem = [
     {
         inputs: [
@@ -243,20 +243,26 @@ const assumedWearablesMap = {
     ],
 };
 exports.assumedWearablesMap = assumedWearablesMap;
-const DOODLE_ADDRESS = '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e';
-exports.DOODLE_ADDRESS = DOODLE_ADDRESS;
 const DOOPLICATION_BLOCK = 16508485;
 exports.DOOPLICATION_BLOCK = DOOPLICATION_BLOCK;
-const IPFS_DOMAIN = 'https://ipfs.io/ipfs';
-exports.IPFS_DOMAIN = IPFS_DOMAIN;
+const IPFS_URL = 'https://ipfs.io/ipfs';
+exports.IPFS_URL = IPFS_URL;
+const DOODLE_METADATA_URL = `${IPFS_URL}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS`;
+exports.DOODLE_METADATA_URL = DOODLE_METADATA_URL;
+const DOOPLICATOR_WEARABLES_URL = 'https://doodles.app/api/dooplicator';
+exports.DOOPLICATOR_WEARABLES_URL = DOOPLICATOR_WEARABLES_URL;
 const ETHEREUM_RPC_URL = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
 exports.ETHEREUM_RPC_URL = ETHEREUM_RPC_URL;
+const UNKNOWN_WEARABLE = 'https://doodles.app/images/dooplicator/missingDood.png';
+exports.UNKNOWN_WEARABLE = UNKNOWN_WEARABLE;
+const GEM_ASSETS_URL = 'https://api-v2-1.gemlabs.xyz/assets';
+exports.GEM_ASSETS_URL = GEM_ASSETS_URL;
+const DOODLE_ADDRESS = '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e';
+exports.DOODLE_ADDRESS = DOODLE_ADDRESS;
 const DOOPMARKET_ADDRESS = '0xcdef9b7949869cbeddcaeb398445e5972d8f564c';
 exports.DOOPMARKET_ADDRESS = DOOPMARKET_ADDRESS;
 const DOOPLICATOR_ADDRESS = '0x36c3ec16da484240f74d05c0213186a3248e0e48';
 exports.DOOPLICATOR_ADDRESS = DOOPLICATOR_ADDRESS;
-const UNKNOWN_WEARABLE = 'https://doodles.app/images/dooplicator/missingDood.png';
-exports.UNKNOWN_WEARABLE = UNKNOWN_WEARABLE;
 const doopContracts = {
     [DOOPMARKET_ADDRESS]: dooplicateItem,
     [DOOPLICATOR_ADDRESS]: dooplicate,

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBlockNumber = exports.resolveENS = void 0;
+exports.getContrat = exports.getBlockNumber = exports.resolveENS = void 0;
 const ethers_1 = require("ethers");
 const constants_1 = require("./constants");
 const resolveENS = (name) => __awaiter(void 0, void 0, void 0, function* () {
@@ -22,3 +22,9 @@ const getBlockNumber = () => __awaiter(void 0, void 0, void 0, function* () {
     return yield provider.getBlockNumber();
 });
 exports.getBlockNumber = getBlockNumber;
+const getContrat = (contract, abi) => __awaiter(void 0, void 0, void 0, function* () {
+    const provider = new ethers_1.JsonRpcProvider(constants_1.ETHEREUM_RPC_URL);
+    const doopmarketContract = new ethers_1.Contract(contract, abi, provider);
+    return doopmarketContract;
+});
+exports.getContrat = getContrat;

@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 8000
 const {
   doopContracts,
   assumedWearablesMap,
-  IPFS_DOMAIN,
+  IPFS_URL,
   DOOPLICATOR_ADDRESS,
   DOOPMARKET_ADDRESS,
   DOODLE_ADDRESS,
@@ -143,7 +143,7 @@ app.get('/assets/:tokenId', async (req, res) => {
     return
   }
   const doodleResponse = await cacheGet(
-    `${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`,
+    `${IPFS_URL}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`,
   )
   const assumed = doodleResponse.attributes.reduce((acc, item) => {
     let ids = assumedWearablesMap[item.value]

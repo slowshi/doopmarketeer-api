@@ -26,12 +26,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv = __importStar(require("dotenv"));
+dotenv.config();
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const DoopTransactions_1 = require("./controller/DoopTransactions");
-const dotenv = __importStar(require("dotenv"));
-dotenv.config();
+const DoopMarket_1 = require("./controller/DoopMarket");
+const Assets_1 = require("./controller/Assets");
+const Undooped_1 = require("./controller/Undooped");
 const app = (0, express_1.default)();
 const port = process.env.PORT || 8000;
 app.use((0, cors_1.default)());
@@ -43,6 +46,10 @@ app.get('/doops', DoopTransactions_1.doops);
 app.get('/history', DoopTransactions_1.history);
 app.get('/feed', DoopTransactions_1.feed);
 app.get('/leaderboard', DoopTransactions_1.leaderboard);
+app.get('/doopmarket', DoopMarket_1.doopmarket);
+app.get('/assets/:tokenId', Assets_1.assets);
+app.get('/doop-floor', Undooped_1.doopFloor);
+app.get('/doodle-floor', Undooped_1.doodleFloor);
 app.listen(port, () => {
     return console.log(`Server is listening on ${port}`);
 });

@@ -53,9 +53,9 @@ const cacheServiceInstance = new CacheService();
 exports.cacheServiceInstance = cacheServiceInstance;
 function cacheGet(url, params, clearCache = false) {
     return __awaiter(this, void 0, void 0, function* () {
-        const paramsObject = Object.fromEntries(Array.from(Object.entries(params)));
         let key = url;
-        if (typeof params !== 'undefined') {
+        if (typeof params !== 'undefined' && params !== null) {
+            const paramsObject = Object.fromEntries(Array.from(Object.entries(params)));
             key = `${url}?${new URLSearchParams(paramsObject)}`;
         }
         //we bust cache

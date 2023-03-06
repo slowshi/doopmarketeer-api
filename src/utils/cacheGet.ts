@@ -1,7 +1,8 @@
 import { TransactionResponse, UserTransactionParams } from '../models/Etherscan'
 import fetch from 'node-fetch'
+import { DoodleMetadata, DooplicatorWearables } from '../models/Doodle'
 
-type CacheValue = TransactionResponse | null | undefined
+type CacheValue = TransactionResponse | DoodleMetadata | DooplicatorWearables | null | undefined
 type CacheIntem = {
   value: CacheValue
   timestamp: number
@@ -47,12 +48,11 @@ class CacheService {
 }
 
 const cacheServiceInstance = new CacheService()
-type ParamTypes = UserTransactionParams
-async function cacheGet(url: string, params: ParamTypes, clearCache = false): Promise<CacheValue | undefined | null> {
-  const paramsObject = Object.fromEntries(Array.from(Object.entries(params)))
-
+type ParamTypes = UserTransactionParams | undefined | null
+async function cacheGet(url: string, params?: ParamTypes, clearCache = false): Promise<CacheValue> {
   let key = url
-  if (typeof params !== 'undefined') {
+  if (typeof params !== 'undefined' && params !== null) {
+    const paramsObject = Object.fromEntries(Array.from(Object.entries(params)))
     key = `${url}?${new URLSearchParams(paramsObject)}`
   }
   //we bust cache

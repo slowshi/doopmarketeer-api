@@ -20,7 +20,7 @@ const { body, query } = require('express-validator');
 const abiDecoder = require('abi-decoder');
 const app = express();
 const PORT = process.env.PORT || 8000;
-const { doopContracts, assumedWearablesMap, IPFS_DOMAIN, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS, DOODLE_ADDRESS, DOOPLICATION_BLOCK, ETHEREUM_RPC_URL, } = require('./constants');
+const { doopContracts, assumedWearablesMap, IPFS_URL, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS, DOODLE_ADDRESS, DOOPLICATION_BLOCK, ETHEREUM_RPC_URL, } = require('./constants');
 const { cacheServiceInstance } = require('./cacheService');
 const { ethers, JsonRpcProvider, Contract } = require('ethers');
 const { request, gql } = require('graphql-request');
@@ -124,7 +124,7 @@ app.get('/assets/:tokenId', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.json({ error: 'No tokenId found' });
         return;
     }
-    const doodleResponse = yield cacheGet(`${IPFS_DOMAIN}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
+    const doodleResponse = yield cacheGet(`${IPFS_URL}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/${req.params.tokenId}`);
     const assumed = doodleResponse.attributes.reduce((acc, item) => {
         let ids = assumedWearablesMap[item.value];
         if (typeof ids === 'undefined')

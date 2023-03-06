@@ -85,14 +85,14 @@ const dooplicate: AbiItem[] = [
     type: 'function',
   },
 ]
-type WearableInfo = {
+type AssumedWearableInfo = {
   wearable_id: string
   image_uri: string
 }
-type WearablesMap = {
-  [key: string]: WearableInfo[]
+type AssumedWearablesMap = {
+  [key: string]: AssumedWearableInfo[]
 }
-const assumedWearablesMap: WearablesMap = {
+const assumedWearablesMap: AssumedWearablesMap = {
   'blue backpack': [
     {
       wearable_id: '141',
@@ -249,13 +249,17 @@ const assumedWearablesMap: WearablesMap = {
   ],
 }
 
-const DOODLE_ADDRESS = '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e'
 const DOOPLICATION_BLOCK = 16508485
-const IPFS_DOMAIN = 'https://ipfs.io/ipfs'
+const IPFS_URL = 'https://ipfs.io/ipfs'
+const DOODLE_METADATA_URL = `${IPFS_URL}/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS`
+const DOOPLICATOR_WEARABLES_URL = 'https://doodles.app/api/dooplicator'
 const ETHEREUM_RPC_URL = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+const UNKNOWN_WEARABLE = 'https://doodles.app/images/dooplicator/missingDood.png'
+const GEM_ASSETS_URL = 'https://api-v2-1.gemlabs.xyz/assets'
+
+const DOODLE_ADDRESS = '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e'
 const DOOPMARKET_ADDRESS = '0xcdef9b7949869cbeddcaeb398445e5972d8f564c'
 const DOOPLICATOR_ADDRESS = '0x36c3ec16da484240f74d05c0213186a3248e0e48'
-const UNKNOWN_WEARABLE = 'https://doodles.app/images/dooplicator/missingDood.png'
 type DoopContracts = {
   [key: string]: AbiItem[]
 }
@@ -270,8 +274,12 @@ export {
   DOOPLICATION_BLOCK,
   DOODLE_ADDRESS,
   ETHEREUM_RPC_URL,
-  IPFS_DOMAIN,
+  IPFS_URL,
+  DOOPLICATOR_WEARABLES_URL,
+  DOODLE_METADATA_URL,
+  GEM_ASSETS_URL,
   UNKNOWN_WEARABLE,
   assumedWearablesMap,
   doopContracts,
+  AssumedWearableInfo,
 }
