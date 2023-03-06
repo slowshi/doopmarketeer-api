@@ -1,45 +1,14 @@
 import { doopContracts, DOOPLICATOR_ADDRESS, DOOPMARKET_ADDRESS } from '../utils/constants'
 import { Decoder } from 'ts-abi-decoder'
-import { Transaction, userTransactions, contractTransactions } from './Etherscan'
-
-interface DecodedInfo {
-  tokenId: string
-  dooplicatorId: string
-  addressOnTheOtherSide: string
-}
-
-interface DoopTransactionInfo {
-  blockNumber: number
-  timeStamp: number
-  from: string
-  hash: string
-  to: string
-  value: string
-  gas: string
-  gasPrice: string
-  cumulativeGasUsed: string
-  functionName: string
-  tokenId: string
-  dooplicatorId: string
-  addressOnTheOtherSide?: string
-}
-
-interface DoopResponse {
-  transactions: DoopTransactionInfo[]
-  error?: string
-}
-
-interface LeaderboardUser {
-  timeStamp: number
-  address: string
-  dooplicate: number
-  dooplicateItem: number
-  value: number
-}
-
-type LeaderboardMap = {
-  [key: string]: LeaderboardUser
-}
+import { userTransactions, contractTransactions } from './Etherscan'
+import { Transaction } from '../interface/Etherscan'
+import {
+  DecodedInfo,
+  DoopTransactionInfo,
+  DoopResponse,
+  LeaderboardUser,
+  LeaderboardMap,
+} from '../interface/DoopTransactions'
 
 const blockSortDesc = (a: { blockNumber: number }, b: { blockNumber: number }) => {
   if (a['blockNumber'] > b['blockNumber']) {
@@ -176,4 +145,5 @@ const getLeaderboard = async (): Promise<LeaderboardUser[]> => {
   const transactions: LeaderboardUser[] = formatLeaderboard([...doopResults, ...marketResults])
   return transactions
 }
+
 export { getDoops, getHistory, getFeed, getLeaderboard }

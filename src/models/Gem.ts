@@ -1,33 +1,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
-import fetch, { Headers, HeadersInit } from 'node-fetch'
-interface GemResponse {
-  _id: string
-  id: string
-  supportsWyvern: boolean
-  currentBasePrice: number
-  marketUrl: string
-  paymentToken: {
-    symbol: string
-    decimals: number
-    address: string
-  }
-  collectionName: string
-  tokenId: string
-  priceInfo: {
-    price: string
-    asset: string
-    quantity: string
-    pricePerItem: string
-    decimals: number
-  }
-  url: string
-}
-
-interface BodyFilter {
-  slug: string
-  traits?: { [key: string]: string[] }
-}
+import fetch, { HeadersInit } from 'node-fetch'
+import { BodyFilter, GemResponse } from '../interface/Gem'
 
 const getGemAssets = async (filters: BodyFilter, page = 1, limit = 5): Promise<GemResponse[]> => {
   const headers: HeadersInit = {
@@ -64,4 +38,4 @@ const getGemAssets = async (filters: BodyFilter, page = 1, limit = 5): Promise<G
   return responseJSON.data
 }
 
-export { getGemAssets, GemResponse }
+export { getGemAssets }

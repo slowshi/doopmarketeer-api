@@ -4,52 +4,17 @@ import {
   DOODLE_METADATA_URL,
   DOOPLICATOR_WEARABLES_URL,
   assumedWearablesMap,
-  AssumedWearableInfo,
+  UNKNOWN_WEARABLE,
 } from '../utils/constants'
-interface DoodleAttribute {
-  trait_type: string
-  value: string
-}
-interface DoodleMetadata {
-  image: string
-  name: string
-  description: string
-  attributes: DoodleAttribute[]
-}
-interface Wearable {
-  wearable_id?: string
-  ipfs_hash?: string
-  name?: string
-  trim?: string
-  set?: string
-  hidden?: boolean
-  position?: string
-  plurality?: boolean
-  ipfs_hash_svg?: string
-  image_uri: string
-}
-interface DooplicatorWearables {
-  wearables: Wearable[]
-}
-interface Doodle {
-  image: string
-  name: string
-  description: string
-  attributes: {
-    trait_type: string
-    value: string
-  }[]
-  wearables: Wearable[]
-  costs: {
-    editionID: string
-    name: string
-    description: string
-    activeListing: {
-      vaultType: string
-      price: number
-    }
-  }[]
-}
+import {
+  DoodleAttribute,
+  DoodleMetadata,
+  Wearable,
+  DooplicatorWearables,
+  Doodle,
+  AssumedWearableInfo,
+} from '../interface/Doodle'
+
 const getDoodle = async (tokenId: string): Promise<Doodle> => {
   const doodleResponse = (await cacheGet(`${DOODLE_METADATA_URL}/${tokenId}`)) as DoodleMetadata
   const wearablesResponse = (await cacheGet(`${DOOPLICATOR_WEARABLES_URL}/${tokenId}`)) as DooplicatorWearables
@@ -69,7 +34,7 @@ const getDoodle = async (tokenId: string): Promise<Doodle> => {
         }
       } else {
         return {
-          image_uri: 'https://doodles.app/images/dooplicator/missingDood.png',
+          image_uri: UNKNOWN_WEARABLE,
         }
       }
     }
@@ -115,4 +80,5 @@ const getDoodle = async (tokenId: string): Promise<Doodle> => {
     costs: costResponse,
   }
 }
-export { getDoodle, DoodleMetadata, DooplicatorWearables, Wearable }
+
+export { getDoodle }

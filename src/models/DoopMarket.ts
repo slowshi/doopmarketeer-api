@@ -1,17 +1,7 @@
 import { DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS, DOODLE_ADDRESS } from '../utils/constants'
 import { abi as DoopmarketABI } from '../abis/DoopmarketABI.json'
 import { getContrat } from '../utils/ethersUtils'
-
-interface DoopmarketListing {
-  tokenId: string
-  value: number
-  timeStamp: number
-  from: string
-  dooplicatorId: string
-  to: string
-  functionName: string
-}
-type Listing = [string, [string, string, string], boolean]
+import { DoopmarketListing, Listing } from '../interface/DoopMarket'
 
 const getDoopmarket = async (): Promise<DoopmarketListing[]> => {
   const doopmarketContract = await getContrat(DOOPMARKET_ADDRESS, DoopmarketABI)

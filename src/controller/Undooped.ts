@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import { getGemAssets } from '../models/Gem'
 import { getUndoopedDooplicator, getUndoopedDoodles } from '../models/Undooped'
 
 const doopFloor = async (req: Request, res: Response) => {
@@ -13,6 +12,7 @@ const doopFloor = async (req: Request, res: Response) => {
   const undooped = await getUndoopedDooplicator(rarity)
   res.json(undooped)
 }
+
 const doodleFloor = async (req: Request, res: Response) => {
   const limit: number = Number(req.query['limit']) || 20
   let page: number = Number(req.query['page']) || 1

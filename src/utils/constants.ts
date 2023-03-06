@@ -1,5 +1,5 @@
 import { AbiItem } from 'web3-utils'
-
+import { AssumedWearableInfo, AssumedWearablesMap } from '../interface/Doodle'
 const dooplicateItem: AbiItem[] = [
   {
     inputs: [
@@ -85,13 +85,7 @@ const dooplicate: AbiItem[] = [
     type: 'function',
   },
 ]
-type AssumedWearableInfo = {
-  wearable_id: string
-  image_uri: string
-}
-type AssumedWearablesMap = {
-  [key: string]: AssumedWearableInfo[]
-}
+
 const assumedWearablesMap: AssumedWearablesMap = {
   'blue backpack': [
     {

@@ -1,54 +1,10 @@
-import { TransactionResponse, UserTransactionParams } from '../models/Etherscan'
 import fetch from 'node-fetch'
-import { DoodleMetadata, DooplicatorWearables } from '../models/Doodle'
+import { UserTransactionParams } from '../interface/Etherscan'
+import { cacheServiceInstance } from './CacheService'
+import { CacheValue } from '../interface/CacheService'
 
-type CacheValue = TransactionResponse | DoodleMetadata | DooplicatorWearables | null | undefined
-type CacheIntem = {
-  value: CacheValue
-  timestamp: number
-}
-class CacheService {
-  private cache = new Map<string, CacheIntem>()
-
-  public has(key: string): boolean {
-    return this.cache.has(key)
-  }
-
-  public set(key: string, value: CacheValue): Map<string, CacheIntem> {
-    const setObj = {
-      value,
-      timestamp: Date.now(),
-    }
-    return this.cache.set(key, setObj)
-  }
-
-  public get(key: string): CacheValue | null {
-    const item = this.cache.get(key)
-    if (typeof item === 'undefined') {
-      return null
-    }
-    return item.value
-  }
-
-  public delete(key: string): boolean {
-    return this.cache.delete(key)
-  }
-
-  public clear(): void {
-    this.cache.clear()
-  }
-
-  public isExpired(key: string, seconds: number): boolean {
-    const item = this.cache.get(key)
-    if (typeof item === 'undefined') {
-      return true
-    }
-    return (Date.now() - item.timestamp) / 1000 > seconds
-  }
-}
-
-const cacheServiceInstance = new CacheService()
 type ParamTypes = UserTransactionParams | undefined | null
+
 async function cacheGet(url: string, params?: ParamTypes, clearCache = false): Promise<CacheValue> {
   let key = url
   if (typeof params !== 'undefined' && params !== null) {
@@ -70,7 +26,7 @@ async function cacheGet(url: string, params?: ParamTypes, clearCache = false): P
   return response
 }
 
-async function fetchWithRetry(url: string, retries = 3, timeout = 50): Promise<CacheValue | undefined | null> {
+async function fetchWithRetry(url: string, retries = 5, timeout = 100): Promise<CacheValue | undefined | null> {
   try {
     const response = await fetch(url)
     return await response.json()

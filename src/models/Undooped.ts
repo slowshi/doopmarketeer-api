@@ -1,13 +1,10 @@
+import { UndoopedDoodle } from '../interface/Undooped'
+import { GemResponse } from '../interface/Gem'
+import { Wearable, DooplicatorWearables } from '../interface/Doodle'
 import { cacheGet } from '../utils/cacheGet'
 import { DOOPLICATOR_WEARABLES_URL } from '../utils/constants'
-import { DooplicatorWearables, Wearable } from './Doodle'
-import { GemResponse, getGemAssets } from './Gem'
-interface UndoopedDoodle {
-  tokenId: string
-  marketUrl: string
-  currentBasePrice: number
-  supportsWyvern: boolean
-}
+import { getGemAssets } from './Gem'
+
 const getUndoopedDoodles = async (page: number, limit = 20): Promise<UndoopedDoodle[]> => {
   const filters = {
     slug: 'doodles-official',
@@ -26,6 +23,7 @@ const getUndoopedDoodles = async (page: number, limit = 20): Promise<UndoopedDoo
   }
   return undooped
 }
+
 const getUndoopedDooplicator = async (rarity: number): Promise<GemResponse[]> => {
   const rarityMap = ['very common', 'common', 'rare']
   const filters = {

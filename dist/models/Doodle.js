@@ -32,7 +32,7 @@ const getDoodle = (tokenId) => __awaiter(void 0, void 0, void 0, function* () {
             }
             else {
                 return {
-                    image_uri: 'https://doodles.app/images/dooplicator/missingDood.png',
+                    image_uri: constants_1.UNKNOWN_WEARABLE,
                 };
             }
         }

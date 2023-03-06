@@ -14,43 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cacheGet = exports.cacheServiceInstance = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
-class CacheService {
-    constructor() {
-        this.cache = new Map();
-    }
-    has(key) {
-        return this.cache.has(key);
-    }
-    set(key, value) {
-        const setObj = {
-            value,
-            timestamp: Date.now(),
-        };
-        return this.cache.set(key, setObj);
-    }
-    get(key) {
-        const item = this.cache.get(key);
-        if (typeof item === 'undefined') {
-            return null;
-        }
-        return item.value;
-    }
-    delete(key) {
-        return this.cache.delete(key);
-    }
-    clear() {
-        this.cache.clear();
-    }
-    isExpired(key, seconds) {
-        const item = this.cache.get(key);
-        if (typeof item === 'undefined') {
-            return true;
-        }
-        return (Date.now() - item.timestamp) / 1000 > seconds;
-    }
-}
-const cacheServiceInstance = new CacheService();
-exports.cacheServiceInstance = cacheServiceInstance;
+const CacheService_1 = require("./CacheService");
+Object.defineProperty(exports, "cacheServiceInstance", { enumerable: true, get: function () { return CacheService_1.cacheServiceInstance; } });
 function cacheGet(url, params, clearCache = false) {
     return __awaiter(this, void 0, void 0, function* () {
         let key = url;
@@ -60,19 +25,19 @@ function cacheGet(url, params, clearCache = false) {
         }
         //we bust cache
         // clearCache = true;
-        if (cacheServiceInstance.has(key) &&
-            !cacheServiceInstance.isExpired(key, 300) &&
+        if (CacheService_1.cacheServiceInstance.has(key) &&
+            !CacheService_1.cacheServiceInstance.isExpired(key, 300) &&
             !clearCache &&
-            cacheServiceInstance.get(key)) {
-            return cacheServiceInstance.get(key);
+            CacheService_1.cacheServiceInstance.get(key)) {
+            return CacheService_1.cacheServiceInstance.get(key);
         }
         const response = yield fetchWithRetry(key);
-        cacheServiceInstance.set(key, response);
+        CacheService_1.cacheServiceInstance.set(key, response);
         return response;
     });
 }
 exports.cacheGet = cacheGet;
-function fetchWithRetry(url, retries = 3, timeout = 50) {
+function fetchWithRetry(url, retries = 5, timeout = 100) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const response = yield (0, node_fetch_1.default)(url);
