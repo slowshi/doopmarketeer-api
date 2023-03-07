@@ -63,40 +63,48 @@ const formatTransactionResponse = (transactions: Transaction[]): DoopTransaction
 }
 
 const formatLeaderboard = (transactions: Transaction[]): LeaderboardUser[] => {
-  const leaderboard: LeaderboardMap = transactions.reduce((acc: LeaderboardMap, item: Transaction) => {
-    let user: LeaderboardUser = {
-      timeStamp: 0,
-      address: '',
-      dooplicate: 0,
-      dooplicateItem: 0,
-      value: 0,
-    }
-    const isDoopmarket = item.functionName.substring(0, 10) !== 'dooplicate'
-    if (typeof acc[item.from] === 'undefined') {
-      user = {
-        timeStamp: Number(item.timeStamp),
-        address: item.from,
-        dooplicate: !isDoopmarket ? 1 : 0,
-        dooplicateItem: isDoopmarket ? 1 : 0,
-        value: Number(item.value),
+  const leaderboard: LeaderboardMap = transactions
+    .filter((transaction: Transaction) => {
+      return (
+        [DOOPMARKET_ADDRESS, DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 &&
+        transaction.functionName.substring(0, 10) === 'dooplicate' &&
+        transaction.isError === '0'
+      )
+    })
+    .reduce((acc: LeaderboardMap, item: Transaction) => {
+      let user: LeaderboardUser = {
+        timeStamp: 0,
+        address: '',
+        dooplicate: 0,
+        dooplicateItem: 0,
+        value: 0,
       }
-    } else {
-      const existingUser: LeaderboardUser = acc[item.from]
-      const itemTimestamp = Number(item.timeStamp)
-      user = {
-        ...existingUser,
-        timeStamp: existingUser.timeStamp >= itemTimestamp ? existingUser.timeStamp : itemTimestamp,
-        value: Number(existingUser.value) + Number(item.value),
-        dooplicate: !isDoopmarket ? existingUser.dooplicate + 1 : existingUser.dooplicate,
-        dooplicateItem: isDoopmarket ? existingUser.dooplicateItem + 1 : existingUser.dooplicateItem,
+      const isDoopmarket = item.functionName.substring(0, 14) === 'dooplicateItem'
+      if (typeof acc[item.from] === 'undefined') {
+        user = {
+          timeStamp: Number(item.timeStamp),
+          address: item.from,
+          dooplicate: !isDoopmarket ? 1 : 0,
+          dooplicateItem: isDoopmarket ? 1 : 0,
+          value: Number(item.value),
+        }
+      } else {
+        const existingUser: LeaderboardUser = acc[item.from]
+        const itemTimestamp = Number(item.timeStamp)
+        user = {
+          ...existingUser,
+          timeStamp: existingUser.timeStamp >= itemTimestamp ? existingUser.timeStamp : itemTimestamp,
+          value: Number(existingUser.value) + Number(item.value),
+          dooplicate: !isDoopmarket ? existingUser.dooplicate + 1 : existingUser.dooplicate,
+          dooplicateItem: isDoopmarket ? existingUser.dooplicateItem + 1 : existingUser.dooplicateItem,
+        }
       }
-    }
-    acc = {
-      ...acc,
-      [item.from]: user,
-    }
-    return acc
-  }, {} as LeaderboardMap)
+      acc = {
+        ...acc,
+        [item.from]: user,
+      }
+      return acc
+    }, {} as LeaderboardMap)
 
   return Object.values(leaderboard)
 }

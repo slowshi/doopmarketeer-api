@@ -58,7 +58,13 @@ const formatTransactionResponse = (transactions) => {
         .sort(blockSortDesc);
 };
 const formatLeaderboard = (transactions) => {
-    const leaderboard = transactions.reduce((acc, item) => {
+    const leaderboard = transactions
+        .filter((transaction) => {
+        return ([constants_1.DOOPMARKET_ADDRESS, constants_1.DOOPLICATOR_ADDRESS].indexOf(transaction.to) > -1 &&
+            transaction.functionName.substring(0, 10) === 'dooplicate' &&
+            transaction.isError === '0');
+    })
+        .reduce((acc, item) => {
         let user = {
             timeStamp: 0,
             address: '',
@@ -66,7 +72,7 @@ const formatLeaderboard = (transactions) => {
             dooplicateItem: 0,
             value: 0,
         };
-        const isDoopmarket = item.functionName.substring(0, 10) !== 'dooplicate';
+        const isDoopmarket = item.functionName.substring(0, 14) === 'dooplicateItem';
         if (typeof acc[item.from] === 'undefined') {
             user = {
                 timeStamp: Number(item.timeStamp),
