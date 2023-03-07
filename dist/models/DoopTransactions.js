@@ -66,21 +66,20 @@ const formatLeaderboard = (transactions) => {
             dooplicateItem: 0,
             value: 0,
         };
+        const isDoopmarket = item.functionName.substring(0, 10) !== 'dooplicate';
         if (typeof acc[item.from] === 'undefined') {
             user = {
                 timeStamp: Number(item.timeStamp),
                 address: item.from,
-                dooplicate: item.functionName.substring(0, 10) === 'dooplicate' ? 1 : 0,
-                dooplicateItem: item.functionName.substring(0, 10) === 'dooplicateItem' ? 1 : 0,
+                dooplicate: !isDoopmarket ? 1 : 0,
+                dooplicateItem: isDoopmarket ? 1 : 0,
                 value: Number(item.value),
             };
         }
         else {
             const existingUser = acc[item.from];
             const itemTimestamp = Number(item.timeStamp);
-            user = Object.assign(Object.assign({}, existingUser), { timeStamp: existingUser.timeStamp >= itemTimestamp ? existingUser.timeStamp : itemTimestamp, value: Number(existingUser.value) + Number(item.value), dooplicate: item.functionName.substring(0, 10) === 'dooplicate' ? existingUser.dooplicate + 1 : existingUser.dooplicate, dooplicateItem: item.functionName.substring(0, 10) === 'dooplicateItem'
-                    ? existingUser.dooplicateItem + 1
-                    : existingUser.dooplicateItem });
+            user = Object.assign(Object.assign({}, existingUser), { timeStamp: existingUser.timeStamp >= itemTimestamp ? existingUser.timeStamp : itemTimestamp, value: Number(existingUser.value) + Number(item.value), dooplicate: !isDoopmarket ? existingUser.dooplicate + 1 : existingUser.dooplicate, dooplicateItem: isDoopmarket ? existingUser.dooplicateItem + 1 : existingUser.dooplicateItem });
         }
         acc = Object.assign(Object.assign({}, acc), { [item.from]: user });
         return acc;
